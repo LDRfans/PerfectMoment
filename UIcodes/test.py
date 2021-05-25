@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import cv2
@@ -15,6 +15,7 @@ class App(QWidget):
         self.height = 512
         self.num_person = m
         self.num_picture = n
+        self.buttonList = []
         self.initUI()
     
     def initUI(self):
@@ -29,12 +30,18 @@ class App(QWidget):
 
         # self.button.move(100,70)
         self.button.clicked.connect(self.on_click)
+
+        # grid = QGridLayout(self)
+        # for i in range(self.num_person):
+        #     for j in range(self.num_picture):
+        #         grid.addWidget(QPushButton(""),i,j)
+                # button.clicked.connect(self.on_click)
         
         self.show()
 
     @pyqtSlot()
     def on_click(self):
-        print('PyQt5 button click')
+        print('PyQt5 button click on: ')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
