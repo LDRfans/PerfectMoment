@@ -12,7 +12,7 @@ Members: Chenyang Zhang, Chunxu Guo, Wenhao Huang, Yijing Ren
     - UI
     - RANSAC & homography
     - blending
-- 2021.5.24
+- 2021.5.24-5.26
   - Face detection
     - dlib part
       - Updated sample program
@@ -21,7 +21,9 @@ Members: Chenyang Zhang, Chunxu Guo, Wenhao Huang, Yijing Ren
   - UI
     - TBD
   - RANSAC & homography
-    - TBD
+    - Finish
+    - Input: base image + target image + target face region + target person region
+    - Output: face aligned with base image + face new bounding box coordinates
   - blending
     - Pyramid blending
       - Updated program
