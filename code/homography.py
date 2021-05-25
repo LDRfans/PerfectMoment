@@ -9,22 +9,24 @@ import random
 import cv2
 import numpy as np
 
-HOMOGRAPHY_SOLVER = False
+HOMOGRAPHY_SOLVER = 1
 
-SIFT_DISTANCE_RATIO = 0.75
-INLIER_RATIO = 0.6
+RESIZE = 256
+INLIER_DIST = 10
+MATCH_DISTANCE_RATIO = 0.75
+INLIER_RATIO = 0.8
 RANSAC = 100
 
 IMG1_PATH = "../imgs/homo_test_1/photo1.jpg"
 IMG2_PATH = "../imgs/homo_test_1/photo2.jpg"
+MASK1_PATH = "../imgs/homo_test_1/mask_body2.png"
+# MASK1_PATH = "../imgs/homo_test_1/mask_person2.png"
+MASK2_PATH = "../imgs/homo_test_1/mask_head2.png"
 
 
 def homographySolver(img2_keys, img1_keys, K):
-    # print("Solving...")
     # Randomly choose K points
     point_index_list = [random.randint(0, len(img1_keys) - 1) for _ in range(K)]
-    # while len(set(point_index_list)) != K:
-    #     point_index_list = [random.randint(0, len(img1_keys)-1) for _ in range(K)]
     x_img1 = [img1_keys[i][0] for i in point_index_list]
     y_img1 = [img1_keys[i][1] for i in point_index_list]
     x_img2 = [img2_keys[i][0] for i in point_index_list]
@@ -37,62 +39,87 @@ def homographySolver(img2_keys, img1_keys, K):
         A.append(row_1)
         A.append(row_2)
     A.append(np.append(np.zeros(8), 1).T)
-    # A.append(np.ones(9).T)
     A = np.mat(A)
     b = np.append(np.zeros(2 * K), 1).reshape(2 * K + 1, 1)
-    # H = np.linalg.solve(A, b)
     H = np.dot(np.dot(A.T, A).I, np.dot(A.T, b))
     H = H / H[8]  # normalize
-    # print("img1:", x_img1, y_img1)
-    # print("img2:", x_img2, y_img2)
-    # print("X:", X)
-    # print("A:", A.shape, A)
-    # print("b:", b)
-    # print("H:", H)
     return H
 
 
 def findHomography(img1_keys, img2_keys):
+    # RANSAC
     for round in range(RANSAC):
         print("RANSAC:", round)
-        # RANSAC
-        # Random select
         H = homographySolver(img1_keys, img2_keys, K=4).reshape(3, 3)  # img_1 <- img_2
-        # H, status = cv2.findHomography(img2_keys, img1_keys, cv2.RANSAC, 5.0)
-        # print("H:", H)
-        # exit()
+
+        # Find inliers
         homo_img1_keys = np.array([np.append(np.array(img1_keys[i]), 1) for i in range(len(img1_keys))])
         homo_img2_keys = np.array([np.append(np.array(img2_keys[i]), 1) for i in range(len(img2_keys))])
-        # print(new_img2_keys)
-        # Find inliers
         inlier_list = []
         for i in range(len(img1_keys)):
             homo_img2_keys[i] = np.dot(H, homo_img2_keys[i])
             homo_img2_keys[i] = homo_img2_keys[i] / homo_img2_keys[i, 2]  # normalize
             dist = np.linalg.norm(homo_img1_keys[i] - homo_img2_keys[i])
-            # print(homo_img1_keys[i], homo_img2_keys[i], dist)
             if dist < INLIER_DIST:
                 inlier_list.append(i)
-        # print(inlier_list)
+
         # If the transform is good enough, refine it using all inliers
         if len(inlier_list) > len(img1_keys) * INLIER_RATIO:
             # print(len(inlier_list), "/", len(img1_keys), "Good!")
             img1_inliers = [img1_keys[i] for i in inlier_list]
             img2_inliers = [img2_keys[i] for i in inlier_list]
-            # print(img1_keys)
-            # print(img1_inliers)
             # Recompute
-            # H_new = solver(img1_inliers, img2_inliers, K=len(img1_inliers)).reshape(3, 3)
-            # print("H_new:", H_new)
-            H_new, _ = cv2.findHomography(np.array(img2_inliers), np.array(img1_inliers), cv2.RANSAC, 5.0)
-            # print("H_std:", H_std)
+            H_new = homographySolver(img1_inliers, img2_inliers, K=len(img1_inliers)).reshape(3, 3)
             return H_new
-        # else:
-        #     print(len(inlier_list), "/", len(img1_keys), len(inlier_list)/len(img1_keys))
-    print("RANSAC fail")
-    return 0
 
-def stitch_two(img1, img2):
+    # If fails
+    print("findHomography fail")
+    exit()
+
+
+def matcher(des_1, des_2):
+    # Find nearest
+
+    # Fix des_1, find in des_2:
+    nearest_list_1_2 = []
+    for i in range(len(des_1)):
+        dist = float('inf')
+        des_2_index_1 = 0
+        des_2_index_2 = 0
+        for j in range(len(des_2)):
+            dist_new = np.linalg.norm(des_1[i] - des_2[j])
+            if dist_new < dist:
+                des_2_index_2 = des_2_index_1
+                des_2_index_1 = j
+                dist = dist_new
+        nearest_list_1_2.append((i, des_2_index_1, des_2_index_2))
+
+    # Fix des_2, find in des_1:
+    nearest_list_2_1 = []
+    for i in range(len(des_2)):
+        dist = float('inf')
+        des_1_index_1 = 0
+        des_1_index_2 = 0
+        for j in range(len(des_1)):
+            dist_new = np.linalg.norm(des_2[i] - des_1[j])
+            if dist_new < dist:
+                des_1_index_2 = des_1_index_1
+                des_1_index_1 = j
+                dist = dist_new
+        nearest_list_2_1.append((i, des_1_index_1, des_1_index_2))
+
+    # If is nearest mutually, match them
+    matches = []
+    for id_1, id_2, _ in nearest_list_1_2:
+        if nearest_list_2_1[id_2][1] == id_1:
+            matches.append((id_1, id_2, _))
+
+    return matches
+
+
+def face_to_base(img_base, img_target, mask_body, mask_face):
+    img1 = img_base
+    img2 = img_target * mask_body
 
     # Compute SIFT descriptors
     sift = cv2.xfeatures2d.SIFT_create()
@@ -100,76 +127,71 @@ def stitch_two(img1, img2):
     keypoints_2, descriptors_2 = sift.detectAndCompute(img2, None)
 
     # Define matecher
-    matcher = cv2.BFMatcher()
-    raw_matches = matcher.knnMatch(descriptors_1, descriptors_2, k=2)
+    raw_matches = matcher(descriptors_1, descriptors_2)
 
     # Select good matches
     good_points = []
     for id_1, match_1, match_2 in raw_matches:
         match_1_dist = np.linalg.norm(descriptors_1[id_1] - descriptors_2[match_1])
         match_2_dist = np.linalg.norm(descriptors_1[id_1] - descriptors_2[match_2])
-        if match_1_dist < SIFT_DISTANCE_RATIO * match_2_dist:
+        if match_1_dist < MATCH_DISTANCE_RATIO * match_2_dist:
             good_points.append((id_1, match_1))
 
     # Calculate homograph H with RANSAC
-    # Here use cv2.findHomography
     if len(good_points) >= 4:
         img1_keys = np.float32([keypoints_1[i].pt for (i, _) in good_points])
         img2_keys = np.float32([keypoints_2[i].pt for (_, i) in good_points])
-        # print(len(img1_keys), len(img2_keys))
         if HOMOGRAPHY_SOLVER:
             H = findHomography(img1_keys, img2_keys)  # img_1 <- img_2
         else:
             H, status = cv2.findHomography(img2_keys, img1_keys, cv2.RANSAC, 5.0)
-        # print(H)
-        # exit()
-        # H = findHomography(img1_keys, img2_keys)    # img_1 <- img_2
     else:
-        print("findHomography fail...")
-    # Stitch the images together. You can use cv2.warpPerspective() in this step.
+        print("findHomography fail: Good points not enough")
+
+    # Stitch the images together.
     height_panorama = img1.shape[0]
-    width_panorama = img1.shape[1] + img2.shape[1]
-    panorama1 = np.zeros((height_panorama, width_panorama, 3))
-    # create masks
-    offset = SMOOTHING_WINDOW_SIZE // 2
-    barrier = img1.shape[1] - offset
-    # L
-    mask1 = np.zeros((height_panorama, width_panorama))
-    mask1[:, barrier - offset:barrier + offset] = np.tile(np.linspace(1, 0, 2 * offset).T, (height_panorama, 1))
-    mask1[:, :barrier - offset] = 1
-    mask1 = cv2.merge([mask1, mask1, mask1])
-    # cv2.imwrite('./output/mask1.jpg', mask1*255)
-    # R
-    mask2 = np.zeros((height_panorama, width_panorama))
-    mask2[:, barrier - offset:barrier + offset] = np.tile(np.linspace(0, 1, 2 * offset).T, (height_panorama, 1))
-    mask2[:, barrier + offset:] = 1
-    mask2 = cv2.merge([mask2, mask2, mask2])
-    # cv2.imwrite('./output/mask2.jpg', mask2*255)
-    # exit()
-    # raw stitch
-    panorama1[0:img1.shape[0], 0:img1.shape[1], :] = img1
-    panorama1 *= mask1
-    panorama1 = panorama1.astype(np.uint8)
-    panorama2 = cv2.warpPerspective(img2, H, (width_panorama, height_panorama)) * mask2
-    panorama2 = panorama2.astype(np.uint8)
-    raw_stitch = panorama1 + panorama2
-    # tailoring
-    rows, cols = np.where(raw_stitch[:, :, 0] != 0)
-    tailored_stitch = raw_stitch[min(rows):max(rows) + 1, min(cols):max(cols) + 1, :]
+    width_panorama = img1.shape[1]
+    panorama = np.zeros((height_panorama, width_panorama, 3))
+
+    # Stitch
+    img2 = img_target * mask_face
+    panorama[0:img1.shape[0], 0:img1.shape[1], :] = img1
+    panorama2 = cv2.warpPerspective(img2, H, (width_panorama, height_panorama))
+
+    x1, y1, x2, y2 = img1.shape[1], img1.shape[0], 0, 0
+    for row in range(panorama2.shape[0]):
+        for col in range(panorama2.shape[1]):
+            if panorama2[row, col, 0] or panorama2[row, col, 1] or panorama2[row, col, 2]:
+                if x1 > col:  x1 = col
+                if y1 > row:  y1 = row
+                if x2 < col:  x2 = col
+                if y2 < row:  y2 = row
+
+    padding = 10
+    x1, y1, x2, y2 = x1 + padding, y1 + padding, x2 - padding, y2 - padding
+    face_aligned = panorama2[y1:y2, x1:x2, :]
+    panorama[y1:y2, x1:x2, :] = face_aligned
+
+    panorama = panorama.astype(np.uint8)
+
+    # return face_aligned, x1, y1, x2, y2
+    return panorama
 
 
 if __name__ == "__main__":
     # Read images
     img_1 = cv2.imread(IMG1_PATH)
     img_2 = cv2.imread(IMG2_PATH)
+    mask_1 = cv2.imread(MASK1_PATH) // 255
+    mask_2 = cv2.imread(MASK2_PATH) // 255
     # Resize
-    img_1 = cv2.resize(img_1, (256, 256))
-    img_2 = cv2.resize(img_2, (256, 256))
+    # img_1 = cv2.resize(img_1, (RESIZE, RESIZE))
+    # img_2 = cv2.resize(img_2, (RESIZE, RESIZE))
+    # mask_1 = cv2.resize(mask_1, (RESIZE, RESIZE))
+    # mask_2 = cv2.resize(mask_2, (RESIZE, RESIZE))
 
-    SMOOTHING_WINDOW_SIZE = img_1.shape[1] // 6
-    INLIER_DIST = img_1.shape[1] // 6
-
-    sti_0_1 = stitch_two(img_1, img_2)
+    sti_0_1 = face_to_base(img_1, img_2, mask_1, mask_2)
 
     cv2.imshow("test", sti_0_1)
     cv2.waitKey(0)
+    # cv2.imwrite("test.jpg", sti_0_1)
