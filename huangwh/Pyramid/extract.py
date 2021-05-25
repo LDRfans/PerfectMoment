@@ -3,6 +3,11 @@ import cv2
 import dlib
 
 def extract(img):
+    '''
+    Read an image and extract key points from it
+    :param img: image to extract, type is ndarray
+    :return: 68 key points list extracted form the image
+    '''
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
