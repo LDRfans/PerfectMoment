@@ -74,6 +74,29 @@ def Reconstruct(l_pyramid):
     return l_pyramid_copy[0]
 
 
+def pyramid_blend(img1, img2, mask):
+    '''
+    The main function for pyramid blending
+    :param img1: Blending image 1
+    :param img2: Blending image 2
+    :param mask: The mask of blending, with 0/1 data
+    :return: blende img, as type uint8
+    '''
+    img1 = img1.astype(np.float)
+    img2 = img2.astype(np.float)
+    mask_pyramid = GaussianPyramid(mask, 5)
+
+    left_pyramid = LaplacianPyramid(img1, 5)
+    right_pyramid = LaplacianPyramid(img2, 5)
+
+    blend_pyramid = []
+    for i in range(0, 5):
+        blend_pyramid.append(left_pyramid[i] * mask_pyramid[i] + right_pyramid[i] * (1 - mask_pyramid[i]))
+
+    blend_image = Reconstruct(blend_pyramid)
+    blend_image = blend_image.astype(np.uint8)
+
+    return blend_image
 
 
 
