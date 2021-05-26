@@ -1,50 +1,68 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QGridLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLineEdit, QPushButton, QVBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import cv2
+import numpy as np
 img = cv2.imread("lena.tiff")
-class App(QWidget):
-
-    def __init__(self,m,n):
+class DataSet:
+    def __init__(self, m, n):
+        self.selected_matrix = np.zeros((m, n))
+    def ClearForReselection(self, coord_x, coord_y):
+        for i in range(coord_x):
+            if self.selected_matrix[i,coord_y] != 0:
+                self.selected_matrix[i,coord_y] = 0
+    def SetSelected(self, coord_x, coord_y):
+        self.ClearForReselection(coord_x, coord_y)
+        self.selected_matrix[coord_x, coord_y] = 1
+class SelectBoard(QMainWindow):
+    def __init__(self, m, n):
+        # super(SelectBoard, self).__init__()
         super().__init__()
-        self.title = 'PyQt5 button - pythonspot.com'
-        self.left = 900
-        self.top = 450
-        self.width = 512
-        self.height = 512
-        self.num_person = m
+        self.num_people = m
         self.num_picture = n
-        self.buttonList = []
-        self.initUI()
-    
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.selectButtonDict = {}
+
+        self.setWindowTitle('Image Selection')
+        self.setFixedSize(512,512)
+        self.generalLayout = QVBoxLayout()
+
+        self._centralWidget = QWidget(self)
+        self.setCentralWidget(self._centralWidget)
+        self._centralWidget.setLayout(self.generalLayout)
         
-        self.button = QPushButton('', self)
-        self.button.setToolTip('This is an example button')
-        self.button.setStyleSheet("background-image : url(lena.tiff);")
-        row,col,_ = img.shape
-        self.button.resize(row,col)
+        self.SetDisplayWindow()
+        self.SetSelectionWindow(self.num_people, self.num_picture)
 
-        # self.button.move(100,70)
-        self.button.clicked.connect(self.on_click)
+    def SetDisplayWindow(self):
+        self.display = QLineEdit()
+        self.display.setFixedHeight(35)
+        self.display.setAlignment(Qt.AlignRight)
+        self.display.setReadOnly(True)
+        self.generalLayout.addWidget(self.display)
 
-        # grid = QGridLayout(self)
-        # for i in range(self.num_person):
-        #     for j in range(self.num_picture):
-        #         grid.addWidget(QPushButton(""),i,j)
-                # button.clicked.connect(self.on_click)
-        
-        self.show()
+    def SetSelectionWindow(self, m, n):
+        self.selectGrid = QGridLayout()
+        self.selection_data = DataSet(m, n)
+        for i in range(m):
+            for j in range(n):
+                button = QPushButton("")
+                self.selectButtonDict[button] = (i,j)
+                button.clicked.connect(self.CheckClicked)
+                self.selectGrid.addWidget(button, i, j)
+                
+        self.generalLayout.addLayout(self.selectGrid)
+        print(self.selectButtonDict)
 
-    @pyqtSlot()
-    def on_click(self):
-        print('PyQt5 button click on: ')
+    def CheckClicked(self):
+        print("Clicked button " + str(self.selectButtonDict[self.sender()]))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     m,n = 3,3
-    ex = App(m,n)
+    view = SelectBoard(m,n)
+    view.show()
+    
     sys.exit(app.exec_())
