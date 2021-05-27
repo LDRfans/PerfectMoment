@@ -2,7 +2,7 @@ import math
 
 import cv2
 import numpy as np
-import extract
+import Extract
 
 
 pts_1 = []
@@ -114,8 +114,8 @@ if __name__ == '__main__':
     # cv2.imshow('img2', img2)
     # cv2.setMouseCallback("img2", mouse2)
     # cv2.waitKey(0)
-    pts_1 = extract.extract(img1)
-    pts_2 = extract.extract(img2)
+    pts_1 = Extract.extract(img1)
+    pts_2 = Extract.extract(img2)
 
     pts_1 = pts_1[31:60]
     pts_2 = pts_2[31:60]
