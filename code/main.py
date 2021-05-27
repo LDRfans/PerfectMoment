@@ -24,14 +24,17 @@ if __name__ == '__main__':
     for i in range(subject_num):
         subject_info_list = img_info_list[selected_list[i]]
         # Homography
-        mask_face, mask_body = generate_mask(subject_info_list[i], img_base.shape)
-        cv2.imshow('1',mask_body)
-        cv2.imshow('2',img_list[0])
-        cv2.imshow('3',np.array(mask_body * 255//2+img_list[0]//2,dtype=np.uint8))
-        cv2.waitKey(0)
-        break
-        face_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_face)
+        mask_head, mask_body = cv2.imread("../imgs/homo_test_1/mask_head2.png")//255, cv2.imread("../imgs/homo_test_1/mask_body2.png")//255
+        # mask_face, mask_body = generate_mask(subject_info_list[i], img_base.shape)
+        # cv2.imshow('1',mask_body)
+        # cv2.imshow('2',img_list[0])
+        # cv2.imshow('3',np.array(mask_body * 255//2+img_list[0]//2,dtype=np.uint8))
+        # cv2.waitKey(0)
+        # break
+        head_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_head)
         # Blending
+        cv2.imshow("head", head_aligned)
+        cv2.waitKey(0)
         break
 
 
