@@ -8,7 +8,7 @@ class DataSet:
     def __init__(self, m, n):
         # TODO: Get the image list of the face detection, then input parameter m,n, self.num_people and self.num_picture can be replaced
         self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
-        self.image_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg"), cv2.imread("q1_1.jpeg")]
+        self.image_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg")]
         self.num_people = m
         self.num_picture = n
         self.selected_matrix = np.zeros((m, n))
