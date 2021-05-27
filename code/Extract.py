@@ -33,7 +33,7 @@ def extract(img, dialation=0.25):
 
     # head bounding boxes
     height,width = img_gray.shape
-    print(width,height)
+    # print(width,height)
     img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     head_bounding_boxes = []
     for subject in rects:
@@ -67,7 +67,7 @@ def extract(img, dialation=0.25):
             top = subject[0]+subject[2]
             w = subject[2]*2
             h = height - top
-            upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
+            upper_body_bounding_boxes.append([int(left),int(top),int(h),int(w)])
     print(upper_body_bounding_boxes)
 
     data = [head_bounding_boxes, upper_body_bounding_boxes]
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
     # cv2读取图像
-    img = cv2.imread("../imgs/homo_test_1/photo1.jpg")
+    img = cv2.imread("imgs/homo_test_1/photo1.jpg")
     extract(img)
     # 取灰度
     # img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
