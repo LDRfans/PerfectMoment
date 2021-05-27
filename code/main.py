@@ -23,11 +23,12 @@ if __name__ == '__main__':
     # Continue
     for i in range(subject_num):
         subject_info_list = img_info_list[selected_list[i]]
+        # Homography
         mask_face, mask_body = generate_mask(subject_info_list[i], img_base.shape)
-        data = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_face)
-
-        cv2.imshow('1',mask_body)
-        break
+        # cv2.imshow('1',mask_body)
+        # break
+        face_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_face)
+        # Blending
 
 
 
