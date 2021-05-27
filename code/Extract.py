@@ -66,7 +66,7 @@ def extract(img, dialation=0.25):
             left = subject[1]-0.25*subject[3]
             top = subject[0]+subject[2]
             w = subject[2]*2
-            h = (height - top) if 
+            h = height - top
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
     print(upper_body_bounding_boxes)
     return pts, head_bounding_boxes, upper_body_bounding_boxes
