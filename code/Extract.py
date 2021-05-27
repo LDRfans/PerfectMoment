@@ -64,7 +64,13 @@ def extract(img, dialation=0.25):
             h = height - top-1
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
     print(upper_body_bounding_boxes)
-    return pts, head_bounding_boxes, upper_body_bounding_boxes
+
+    data = [head_bounding_boxes, upper_body_bounding_boxes]
+    data = np.array(data)
+    data = data.T
+
+    # return head_bounding_boxes, upper_body_bounding_boxes
+    return data
 
 
 if __name__ == '__main__':

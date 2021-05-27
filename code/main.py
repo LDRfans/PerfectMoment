@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # TODO: Give the data to UI
 
     # Simulate the UI
-    subject_num = len(img_info_list)
+    subject_num = len(img_info_list[0])
     img_base_index = 0
 
 
