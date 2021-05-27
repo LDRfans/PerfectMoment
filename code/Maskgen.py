@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.ndimage import gaussian_filter
 
 
 def generate_mask(subject_info, base_size):
@@ -13,8 +14,8 @@ def generate_mask(subject_info, base_size):
     mask_head = np.zeros((x, y), dtype=np.bool)
     mask_body = np.zeros((x, y), dtype=np.bool)
 
-    head_x, head_y, head_w, head_h = head_info
-    body_x, body_y, body_w, body_h = body_info
+    head_y, head_x, head_h, head_w = head_info
+    body_y, body_x, body_h, body_w = body_info
     # Head
     for i in range(head_y, head_y + head_h):
         for j in range(head_x, head_x + head_w):
@@ -28,5 +29,12 @@ def generate_mask(subject_info, base_size):
     return mask_head, mask_body
 
 
+def generate_pyramid_mask(pt1, pt2, img_shape):
+    x, y, _ = img_shape
+    mask = np.zeros((x,y),dtype=np.float)
+    
 
+    return mask
 
+if __name__ == '__main__':
+    pass

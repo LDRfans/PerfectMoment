@@ -174,8 +174,8 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
 
     panorama = panorama.astype(np.uint8)
 
-    # return face_aligned, x1, y1, x2, y2
-    return panorama
+    return face_aligned, [y1, x1], [y2, x2]
+    # return panorama
 
 
 if __name__ == "__main__":
