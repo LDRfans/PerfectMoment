@@ -8,7 +8,7 @@ def extract(img, dialation=0.25):
     Read an image and extract key points from it
     :param img: image to extract, type is ndarray
            dialation: bounding box dialtion rate
-    :return: 68 key points list extracted form the image
+    :return: A list of person info. person=>[head,body] posision
 
     '''
     detector = dlib.get_frontal_face_detector()
@@ -69,7 +69,13 @@ def extract(img, dialation=0.25):
             h = height - top
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
     print(upper_body_bounding_boxes)
-    return pts, head_bounding_boxes, upper_body_bounding_boxes
+
+    data = [head_bounding_boxes, upper_body_bounding_boxes]
+    data = np.array(data)
+    data = np.swapaxes(data, 0, 1)
+
+    # return head_bounding_boxes, upper_body_bounding_boxes
+    return data
 
 
 if __name__ == '__main__':
@@ -77,7 +83,7 @@ if __name__ == '__main__':
     predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
     # cv2读取图像
-    img = cv2.imread("imgs/homo_test_1/photo2.jpg")
+    img = cv2.imread("../imgs/homo_test_1/photo1.jpg")
     extract(img)
     # 取灰度
     # img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
