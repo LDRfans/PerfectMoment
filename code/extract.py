@@ -42,7 +42,7 @@ def extract(img, dialation=0.25):
         right = subject.right()
         head_bounding_boxes.append(
             [int(left-dialation*w), int(top-dialation*h), int(w+2*dialation*w), int(h+2*dialation*h)])
-    # print(head_bounding_boxes)
+    print(head_bounding_boxes)
 
     haar_upper_body_cascade = cv2.CascadeClassifier(
         "./haarcascade_upperbody.xml")
@@ -63,7 +63,7 @@ def extract(img, dialation=0.25):
             w = subject[2]*2
             h = height - top-1
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
-    # print(upper_body_bounding_boxes)
+    print(upper_body_bounding_boxes)
     return pts, head_bounding_boxes, upper_body_bounding_boxes
 
 
