@@ -178,6 +178,10 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
 
     panorama = panorama.astype(np.uint8)
 
+    # cv2.imshow('1',panorama)
+    # cv2.waitKey()
+
+
     return face_aligned, [y1, x1], [y2, x2]
     # return panorama
 

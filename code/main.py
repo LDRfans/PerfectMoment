@@ -4,7 +4,7 @@ from Extract import extract
 import cv2
 import numpy as np
 from Fileop import read_img
-from Maskgen import generate_mask
+from Maskgen import generate_mask,generate_pyramid_mask
 
 if __name__ == '__main__':
     paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
@@ -33,8 +33,13 @@ if __name__ == '__main__':
         # break
         head_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_head)
         # Blending
-        cv2.imshow("head", head_aligned)
-        cv2.waitKey(0)
+        # cv2.imshow("head", head_aligned)
+        # cv2.waitKey(0)
+
+        mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
+        blended_img = pyramid_blend(head_aligned,img_base,mask)
+        cv2.imshow('1',blended_img)
+        cv2.waitKey()
         break
 
 

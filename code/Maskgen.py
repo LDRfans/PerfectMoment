@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import gaussian_filter
+import cv2
 
 
 def generate_mask(subject_info, base_size):
@@ -31,10 +32,20 @@ def generate_mask(subject_info, base_size):
 
 def generate_pyramid_mask(pt1, pt2, img_shape):
     x, y, _ = img_shape
-    mask = np.zeros((x,y),dtype=np.float)
+    mask = np.zeros((x, y), dtype=np.float)
+
+    # Set the mask to the raw 0/1
+    y1, x1 = pt1
+    y2, x2 = pt2
+    mask[y1:y2, x1:x2] = 1
+
+    mask2 = gaussian_filter(mask, sigma=10)
+    # cv2.imshow('mask',mask2)
+    # cv2.waitKey()
 
 
-    return mask
+    return mask2
+
 
 if __name__ == '__main__':
     pass
