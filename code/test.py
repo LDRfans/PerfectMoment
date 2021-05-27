@@ -1,9 +1,16 @@
 import sys
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
+
+def ImageResize(img, ratio):
+    row = img.shape[0]
+    col = img.shape[1]
+    ret = cv2.resize(img,(int(col*ratio),int(row*ratio)))
+    return ret
+
 class DataSet:
     def __init__(self, m, n):
         # TODO: Get the image list of the face detection, then input parameter m,n, self.num_people and self.num_picture can be replaced
@@ -30,6 +37,24 @@ class DataSet:
         return self.display_image_data
     def GetSelectedFaces(self):
         return self.selected_matrix
+
+    # def FaceSetRegulation(self):
+    #     m,n = self.face_set.shape[:2]
+    #     for i in range(m):
+    #         for j in range(n):
+    #             image = self.face_set[i,j]
+    #             row, col = image.shape[:2]
+    #             if row > col:
+    #                 denominator = col
+    #                 diff = (row - col) // 2
+    #                 image = image[diff:row-diff,:,:]
+    #             else:
+    #                 denominator = row
+    #                 diff = (col - row) // 2
+    #                 image = image[:,diff:col-diff,:]
+    #             ratio = 100 / denominator
+    #             self.face_set[i,j] = ImageResize(image, ratio)
+
 class SelectBoard(QMainWindow):
     def __init__(self, m, n):
         # super(SelectBoard, self).__init__()
@@ -38,7 +63,7 @@ class SelectBoard(QMainWindow):
         self.selectButtonDict = {}
 
         self.setWindowTitle('Image Selection')
-        self.setFixedSize(1024,512)
+        # self.setFixedSize(1024,512)
         self.generalLayout = QHBoxLayout()
         self.subLayout = QVBoxLayout()
 
@@ -71,7 +96,7 @@ class SelectBoard(QMainWindow):
         # print(type(self.combo.currentText()))
         self.selection_data.display_image_data = self.selection_data.image_pack[int(self.combo.currentText())]
         self.ShowResultImage(self.selection_data.display_image_data)
-        
+
     def SetSelectionWindow(self, m, n):
         self.selectGrid = QGridLayout()
         for i in range(m):
@@ -80,6 +105,7 @@ class SelectBoard(QMainWindow):
                 q_img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
                 button = QPushButton("")
                 button.setIcon(QIcon(QPixmap.fromImage(q_img)))
+                button.setIconSize(QSize(100,100))
                 button.setAccessibleName(str((i,j)))
                 self.selectButtonDict[button] = (i,j)
                 button.clicked.connect(self.CheckClicked)
@@ -96,7 +122,7 @@ class SelectBoard(QMainWindow):
         coord_x, coord_y = self.selectButtonDict[self.sender()]
         self.selection_data.SetSelected(coord_x, coord_y)
         print(self.selection_data.selected_matrix)
-
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     m,n = 3,3
