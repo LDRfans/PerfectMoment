@@ -121,6 +121,10 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
     img1 = img_base
     img2 = img_target * mask_body
 
+    #Convert the image
+    img1 = img1.astype(np.uint8)
+    img2 = img2.astype(np.uint8)
+
     # Compute SIFT descriptors
     sift = cv2.xfeatures2d.SIFT_create()
     keypoints_1, descriptors_1 = sift.detectAndCompute(img1, None)
