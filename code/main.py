@@ -36,8 +36,15 @@ if __name__ == '__main__':
         # cv2.imshow("head", head_aligned)
         # cv2.waitKey(0)
 
+        head_full = np.zeros((img_base.shape),dtype=np.uint8)
+        y1, x1 = pt1
+        y2, x2 = pt2
+        head_full[y1:y2, x1:x2, :] += head_aligned
+        # cv2.imshow('head_full',head_full)
+        # cv2.waitKey()
+
         mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
-        blended_img = pyramid_blend(head_aligned,img_base,mask)
+        blended_img = pyramid_blend(head_full,img_base,mask)
         cv2.imshow('1',blended_img)
         cv2.waitKey()
         break

@@ -31,13 +31,14 @@ def generate_mask(subject_info, base_size):
 
 
 def generate_pyramid_mask(pt1, pt2, img_shape):
-    x, y, _ = img_shape
-    mask = np.zeros((x, y), dtype=np.float)
+    x, y, c = img_shape
+    mask = np.zeros((x, y, c), dtype=np.float)
 
     # Set the mask to the raw 0/1
     y1, x1 = pt1
     y2, x2 = pt2
-    mask[y1:y2, x1:x2] = 1
+    bias = 22
+    mask[y1+bias:y2-bias, x1+bias:x2-bias, :] = 1
 
     mask2 = gaussian_filter(mask, sigma=10)
     # cv2.imshow('mask',mask2)
