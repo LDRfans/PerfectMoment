@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QSizePolicy
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
@@ -47,8 +47,8 @@ class DataSet:
 
     ''' Function that clear all the values in the selected_matrix'''
     def ClearAll(self):
-        for i in range(self.num_people):
-            for j in range(self.num_picture):
+        for i in range(self.num_picture):
+            for j in range(self.num_people):
                 self.selected_matrix[i,j] = 0
     
     ''' Getter function in order to get the display_image_data (type: row*col*3 np.ndarray, cv2 type),
@@ -103,7 +103,6 @@ class SelectBoard(QMainWindow):
         
         self.SetDisplayWindow()
         self.SetDisplayImageSelection()
-        print(self.selection_data.num_people, self.selection_data.num_picture)
         self.SetSelectionWindow(self.selection_data.num_picture, self.selection_data.num_people)
         self.SetOptionButtons()
 
@@ -113,6 +112,7 @@ class SelectBoard(QMainWindow):
     #---Functions that set up the left result and background display window---#
     def SetDisplayWindow(self):
         self.display = QLabel()
+        self.display.setScaledContents(True)
         self.display.setAlignment(Qt.AlignLeft)
         self.ShowResultImage(self.selection_data.image_pack[0])
         self.generalLayout.addWidget(self.display)
@@ -154,9 +154,11 @@ class SelectBoard(QMainWindow):
                 image = self.selection_data.face_set[i,j]
                 q_img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
                 button = QPushButton("")
+                button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 button.setCheckable(True)
                 button.setIcon(QIcon(QPixmap.fromImage(q_img)))
                 button.setIconSize(QSize(100,100))
+                # button.setIconSize(QSize(button.size().width(), button.size().height()))
                 button.setAccessibleName(str((i,j)))
                 self.selectButtonDict[button] = (i,j)
                 button.clicked.connect(self.CheckClicked)
