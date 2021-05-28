@@ -23,10 +23,10 @@ class DataSet:
         self.num_people = self.face_set.shape[1]
 
         # IMPORTANT TODO: For roubustness, we may consider people more than image is invalid, maybe will need triming in face detection
-        if self.num_people > self.num_picture:
-            print("There are more people in images provided, will cut out", str(self.num_people - self.num_picture), "people. ")
-            self.face_set = self.face_set[:, :self.num_picture, :, :, :]
-            self.num_people = self.num_picture
+        # if self.num_people > self.num_picture:
+        #     print("There are more people in images provided, will cut out", str(self.num_people - self.num_picture), "people. ")
+        #     self.face_set = self.face_set[:, :self.num_picture, :, :, :]
+        #     self.num_people = self.num_picture
 
         self.selected_matrix = np.zeros((self.num_picture, self.num_people))
         self.display_image = None
