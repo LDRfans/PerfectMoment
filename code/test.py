@@ -104,6 +104,7 @@ class SelectBoard(QMainWindow):
                 image = self.selection_data.face_set[i,j]
                 q_img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
                 button = QPushButton("")
+                button.setCheckable(True)
                 button.setIcon(QIcon(QPixmap.fromImage(q_img)))
                 button.setIconSize(QSize(100,100))
                 button.setAccessibleName(str((i,j)))
@@ -120,9 +121,23 @@ class SelectBoard(QMainWindow):
         # print("Clicked button " + str(self.selectButtonDict[self.sender()]))
         print("Clicked button " + self.sender().accessibleName())
         coord_x, coord_y = self.selectButtonDict[self.sender()]
+        self.MarkClickedEachRow(coord_x, coord_y)
         self.selection_data.SetSelected(coord_x, coord_y)
         print(self.selection_data.selected_matrix)
-    
+
+    def MarkClickedEachRow(self, coord_x, coord_y):
+        for btn in self.selectButtonDict.keys():
+            if btn.isChecked():
+                btn.setStyleSheet("background-color : red")
+            x, y = self.selectButtonDict[btn]
+            if y == coord_y and x != coord_x:
+                btn.setChecked(False)
+                btn.setStyleSheet("background-color : none")
+
+    def ClearAllClickedMarks(self):
+        for btn in self.selectButtonDict.keys():
+            btn.setChecked(False)
+            
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     m,n = 3,3
