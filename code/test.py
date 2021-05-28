@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
 
+img_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg")]
 def ImageResize(img, ratio):
     row = img.shape[0]
     col = img.shape[1]
@@ -12,14 +13,20 @@ def ImageResize(img, ratio):
     return ret
 
 class DataSet:
-    def __init__(self, m, n):
-        # TODO: Get the image list of the face detection, then input parameter m,n, self.num_people and self.num_picture can be replaced
-        self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
-        self.image_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg")]
-        self.num_people = m
-        self.num_picture = n
-        self.selected_matrix = np.zeros((m, n))
-        # TODO: This is the result output image data
+    def __init__(self, img_pack):
+        # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
+        self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
+        self.image_pack = img_pack
+        self.num_people = self.face_set.shape[0]
+        self.num_picture = len(self.image_pack)
+
+        # IMPORTANT TODO: For roubustness, we may consider people more than image is invalid, maybe will need triming in face detection
+        if self.num_people > self.num_picture:
+            print("There are more people in images provided, will cut out", str(self.num_people - self.num_picture), "people. ")
+            self.face_set = self.face_set[:, :self.num_picture, :, :, :]
+            self.num_people = self.num_picture
+
+        self.selected_matrix = np.zeros((self.num_people, self.num_picture))
         self.display_image = None
         self.display_image_data = self.image_pack[0]
 
@@ -75,10 +82,10 @@ class DataSet:
     #             self.face_set[i,j] = ImageResize(image, ratio)
 
 class SelectBoard(QMainWindow):
-    def __init__(self, m, n):
+    def __init__(self):
         # super(SelectBoard, self).__init__()
         super().__init__()
-        self.selection_data = DataSet(m, n)
+        self.selection_data = DataSet(img_pack)
         self.selectButtonDict = {}
 
     #------Set out the structure of the UI window------#
@@ -94,7 +101,8 @@ class SelectBoard(QMainWindow):
         
         self.SetDisplayWindow()
         self.SetDisplayImageSelection()
-        self.SetSelectionWindow(m, n)
+        print(self.selection_data.num_people, self.selection_data.num_picture)
+        self.SetSelectionWindow(self.selection_data.num_people, self.selection_data.num_picture)
         self.SetOptionButtons()
 
         self.subLayout.addLayout(self.optionsLayout)
@@ -217,8 +225,7 @@ class SelectBoard(QMainWindow):
             
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    m,n = 3,3
-    view = SelectBoard(m,n)
+    view = SelectBoard()
     view.show()
     
     sys.exit(app.exec_())
