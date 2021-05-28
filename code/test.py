@@ -21,7 +21,7 @@ class DataSet:
         self.selected_matrix = np.zeros((m, n))
         # TODO: This is the result output image data
         self.display_image = None
-        self.display_image_data = None
+        self.display_image_data = self.image_pack[0]
 
     ''' Helper function for SetSelected(), it will be called each time checking one button to make sure
         there is only one button in a column is selected (only one face for a person)'''
@@ -43,14 +43,19 @@ class DataSet:
                 self.selected_matrix[i,j] = 0
     
     ''' Getter function in order to get the display_image_data (type: row*col*3 np.ndarray, cv2 type),
-        which is the user selected background, it can be used for later blending data'''
-    def GetSelectedBackgroundImage(self):
+        which is the user selected background, it can be used for later blending data,
+        self.display_image_data is also the place to save the blending result'''
+    def GetDisplayImageData(self):
         return self.display_image_data
 
     ''' Getter function in order to get the selected_matrix (type: num_picture * num_people np.ndarray, 0, 1 matrix),
         which is the user selected faces, it can be used for later blending data'''
     def GetSelectedFaces(self):
         return self.selected_matrix
+
+    ''' Setter function to set the display_image_data, used for result displaying and saving '''
+    def SetDisplayImageData(self, img):
+        self.display_image_data = img
 
     # def FaceSetRegulation(self):
     #     m,n = self.face_set.shape[:2]
@@ -90,6 +95,10 @@ class SelectBoard(QMainWindow):
         self.SetDisplayWindow()
         self.SetDisplayImageSelection()
         self.SetSelectionWindow(m, n)
+        self.SetOptionButtons()
+
+        self.subLayout.addLayout(self.optionsLayout)
+        self.generalLayout.addLayout(self.subLayout)
 
     #---Functions that set up the left result and background display window---#
     def SetDisplayWindow(self):
@@ -117,7 +126,14 @@ class SelectBoard(QMainWindow):
         will save the data result (type: numpy.ndarray, 1 picture) in self.selection_data.display_image_data'''
     def ImageSelectionUpdateDisplay(self):
         # print(type(self.combo.currentText()))
-        self.selection_data.display_image_data = self.selection_data.image_pack[int(self.combo.currentText())]
+        # self.selection_data.display_image_data = self.selection_data.image_pack[int(self.combo.currentText())]
+        self.selection_data.SetDisplayImageData(self.selection_data.image_pack[int(self.combo.currentText())])
+        self.ShowResultImage(self.selection_data.display_image_data)
+
+    def ClearSelectedBackground(self):
+        # self.selection_data.display_image_data = self.selection_data.image_pack[0]
+        self.selection_data.SetDisplayImageData(self.selection_data.image_pack[0])
+        self.combo.setCurrentText('0')
         self.ShowResultImage(self.selection_data.display_image_data)
 
     #---Functions that set up the right selection pad for faces selections---#
@@ -139,7 +155,6 @@ class SelectBoard(QMainWindow):
         self.subLayout.addLayout(self.selectGrid)
         # for i in self.selectButtonDict.keys():
         #     print(i.accessibleName())
-        self.generalLayout.addLayout(self.subLayout)
 
     ''' Callback function for button.clicked.connect() (internal function),
         it will give out the clicked button's coordinates and pass it to self.selection_data.selected_matrix for record,
@@ -166,6 +181,39 @@ class SelectBoard(QMainWindow):
     def ClearAllClickedMarks(self):
         for btn in self.selectButtonDict.keys():
             btn.setChecked(False)
+            btn.setStyleSheet("background-color : none")
+
+    #---Functions that set up the right options buttons group---#
+    def SetOptionButtons(self):
+        self.btn_ok = QPushButton("OK")
+        self.btn_reset = QPushButton("Reset")
+        self.btn_save = QPushButton("Save")
+        self.optionsLayout.addWidget(self.btn_ok)
+        self.optionsLayout.addWidget(self.btn_reset)
+        self.optionsLayout.addWidget(self.btn_save)
+
+        self.btn_reset.clicked.connect(self.Reset)
+        self.btn_save.clicked.connect(self.Save)
+        self.btn_ok.clicked.connect(self.Confirm)
+
+    ''' Callback function for self.btn_reset, it will reset self.selected_data.selected_matrix to all 0,
+        make it right for visual effects'''
+    def Reset(self):
+        self.selection_data.ClearAll()
+        self.ClearAllClickedMarks()
+        self.ClearSelectedBackground()
+        print("Reset done: ")
+        print(self.selection_data.selected_matrix)
+    def Save(self):
+        cv2.imwrite("Result.jpg", self.selection_data.GetDisplayImageData())
+    def Confirm(self):
+        face_matrix = self.selection_data.GetSelectedFaces()
+        background = self.selection_data.GetDisplayImageData()
+        # TODO: You need to call the blending function here, and output the result!!!!!!!
+        # result = YOUR_FUNCTION()
+        # self.selection_data.SetDisplayImageData(result)
+        # self.ShowResultImage(result)
+
             
 if __name__ == '__main__':
     app = QApplication(sys.argv)
