@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLa
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
-
+#TODO: Need to figure out how to load in all images in a list like below
 img_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg")]
 def ImageResize(img, ratio):
     row = img.shape[0]
