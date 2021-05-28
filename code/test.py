@@ -22,19 +22,33 @@ class DataSet:
         # TODO: This is the result output image data
         self.display_image = None
         self.display_image_data = None
-    def ClearForReselection(self, coord_x, coord_y):
+
+    ''' Helper function for SetSelected(), it will be called each time checking one button to make sure
+        there is only one button in a column is selected (only one face for a person)'''
+    def ClearForReselection(self, coord_y):
         # for i in range(coord_x):
             # if self.selected_matrix[i,coord_y] != 0:
         self.selected_matrix[:,coord_y] = 0
+
+    ''' Helper function for class SelectBoard's CheckClicked(), it will set corresponding clicked button coordinate's
+        value to 1'''
     def SetSelected(self, coord_x, coord_y):
-        self.ClearForReselection(coord_x, coord_y)
+        self.ClearForReselection(coord_y)
         self.selected_matrix[coord_x, coord_y] = 1
+
+    ''' Function that clear all the values in the selected_matrix'''
     def ClearAll(self):
         for i in range(self.num_people):
             for j in range(self.num_picture):
                 self.selected_matrix[i,j] = 0
+    
+    ''' Getter function in order to get the display_image_data (type: row*col*3 np.ndarray, cv2 type),
+        which is the user selected background, it can be used for later blending data'''
     def GetSelectedBackgroundImage(self):
         return self.display_image_data
+
+    ''' Getter function in order to get the selected_matrix (type: num_picture * num_people np.ndarray, 0, 1 matrix),
+        which is the user selected faces, it can be used for later blending data'''
     def GetSelectedFaces(self):
         return self.selected_matrix
 
@@ -62,10 +76,12 @@ class SelectBoard(QMainWindow):
         self.selection_data = DataSet(m, n)
         self.selectButtonDict = {}
 
+    #------Set out the structure of the UI window------#
         self.setWindowTitle('Image Selection')
         # self.setFixedSize(1024,512)
         self.generalLayout = QHBoxLayout()
         self.subLayout = QVBoxLayout()
+        self.optionsLayout = QHBoxLayout()
 
         self._centralWidget = QWidget(self)
         self.setCentralWidget(self._centralWidget)
@@ -75,28 +91,36 @@ class SelectBoard(QMainWindow):
         self.SetDisplayImageSelection()
         self.SetSelectionWindow(m, n)
 
+    #---Functions that set up the left result and background display window---#
     def SetDisplayWindow(self):
         self.display = QLabel()
         self.display.setAlignment(Qt.AlignLeft)
         self.ShowResultImage(self.selection_data.image_pack[0])
         self.generalLayout.addWidget(self.display)
 
+    ''' Display the parameter IMAGE(type: numpy.ndarray) on the left window, convert function'''
     def ShowResultImage(self, image):
         self.selection_data.display_image = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
         self.display.setPixmap(QPixmap.fromImage(self.selection_data.display_image))
         self.display.resize(image.shape[0], image.shape[1])
 
+    #---Functions that set up the right drop down menu for background selection---#
     def SetDisplayImageSelection(self):
         self.combo = QComboBox(self)
         for i in range(len(self.selection_data.image_pack)):
             self.combo.addItem(str(i))
         self.combo.currentIndexChanged.connect(self.ImageSelectionUpdateDisplay)
         self.subLayout.addWidget(self.combo)
+
+    ''' Helper function for SetDisplayImageSelection() 
+        Initially add all the input images (original images) in self.selection_data.image_pack (type: numpy.ndarray, m pictures) for background selection,
+        will save the data result (type: numpy.ndarray, 1 picture) in self.selection_data.display_image_data'''
     def ImageSelectionUpdateDisplay(self):
         # print(type(self.combo.currentText()))
         self.selection_data.display_image_data = self.selection_data.image_pack[int(self.combo.currentText())]
         self.ShowResultImage(self.selection_data.display_image_data)
 
+    #---Functions that set up the right selection pad for faces selections---#
     def SetSelectionWindow(self, m, n):
         self.selectGrid = QGridLayout()
         for i in range(m):
@@ -117,6 +141,9 @@ class SelectBoard(QMainWindow):
         #     print(i.accessibleName())
         self.generalLayout.addLayout(self.subLayout)
 
+    ''' Callback function for button.clicked.connect() (internal function),
+        it will give out the clicked button's coordinates and pass it to self.selection_data.selected_matrix for record,
+        for functions in self.selection_data, see class DataSet for details'''
     def CheckClicked(self):
         # print("Clicked button " + str(self.selectButtonDict[self.sender()]))
         print("Clicked button " + self.sender().accessibleName())
@@ -125,6 +152,7 @@ class SelectBoard(QMainWindow):
         self.selection_data.SetSelected(coord_x, coord_y)
         print(self.selection_data.selected_matrix)
 
+    ''' Visual function that mark selected button red and pop up inappropriate buttons automatically'''
     def MarkClickedEachRow(self, coord_x, coord_y):
         for btn in self.selectButtonDict.keys():
             if btn.isChecked():
@@ -134,6 +162,7 @@ class SelectBoard(QMainWindow):
                 btn.setChecked(False)
                 btn.setStyleSheet("background-color : none")
 
+    ''' Visual function that clear out all selected buttons'''
     def ClearAllClickedMarks(self):
         for btn in self.selectButtonDict.keys():
             btn.setChecked(False)
