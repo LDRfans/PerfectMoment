@@ -15,10 +15,12 @@ def ImageResize(img, ratio):
 class DataSet:
     def __init__(self, img_pack):
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
-        self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
+        self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
         self.image_pack = img_pack
-        self.num_people = self.face_set.shape[0]
+
+        # Each row is a picture, each column is a person, a person can only have one face in all pictures, thus only on 1 in each column
         self.num_picture = len(self.image_pack)
+        self.num_people = self.face_set.shape[1]
 
         # IMPORTANT TODO: For roubustness, we may consider people more than image is invalid, maybe will need triming in face detection
         if self.num_people > self.num_picture:
@@ -26,7 +28,7 @@ class DataSet:
             self.face_set = self.face_set[:, :self.num_picture, :, :, :]
             self.num_people = self.num_picture
 
-        self.selected_matrix = np.zeros((self.num_people, self.num_picture))
+        self.selected_matrix = np.zeros((self.num_picture, self.num_people))
         self.display_image = None
         self.display_image_data = self.image_pack[0]
 
@@ -102,7 +104,7 @@ class SelectBoard(QMainWindow):
         self.SetDisplayWindow()
         self.SetDisplayImageSelection()
         print(self.selection_data.num_people, self.selection_data.num_picture)
-        self.SetSelectionWindow(self.selection_data.num_people, self.selection_data.num_picture)
+        self.SetSelectionWindow(self.selection_data.num_picture, self.selection_data.num_people)
         self.SetOptionButtons()
 
         self.subLayout.addLayout(self.optionsLayout)
