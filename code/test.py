@@ -4,8 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLa
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
-#TODO: Need to figure out how to load in all images in a list like below
-img_pack = [cv2.imread("lena.tiff"), cv2.imread("q2.jpeg")]
+
 def ImageResize(img, ratio):
     row = img.shape[0]
     col = img.shape[1]
@@ -84,15 +83,27 @@ class DataSet:
     #             self.face_set[i,j] = ImageResize(image, ratio)
 
 class SelectBoard(QMainWindow):
-    def __init__(self):
+    def __init__(self, img_pack):
         # super(SelectBoard, self).__init__()
         super().__init__()
         self.selection_data = DataSet(img_pack)
         self.selectButtonDict = {}
 
+        self.height = 0
+        self.width = 0
+        for img in img_pack:
+            row, col, _ = img.shape
+            if row > self.height:
+                self.height = row
+            if col > self.width:
+                self.width = col
+        default_size = self.selection_data.num_picture * 100 + 50
+        if self.height < default_size:
+            self.height = default_size
+        self.width = self.width + self.selection_data.num_people * 100
     #------Set out the structure of the UI window------#
         self.setWindowTitle('Image Selection')
-        # self.setFixedSize(1024,512)
+        self.setFixedSize(self.width, self.height)
         self.generalLayout = QHBoxLayout()
         self.subLayout = QVBoxLayout()
         self.optionsLayout = QHBoxLayout()
@@ -108,20 +119,26 @@ class SelectBoard(QMainWindow):
 
         self.subLayout.addLayout(self.optionsLayout)
         self.generalLayout.addLayout(self.subLayout)
+        # self.generalLayout.addStretch()
+        self.subLayout.addStretch()
 
     #---Functions that set up the left result and background display window---#
     def SetDisplayWindow(self):
         self.display = QLabel()
-        self.display.setScaledContents(True)
+        self.display.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        # self.display.setScaledContents(True)
         self.display.setAlignment(Qt.AlignLeft)
+        self.display.setScaledContents(True)
         self.ShowResultImage(self.selection_data.image_pack[0])
         self.generalLayout.addWidget(self.display)
 
     ''' Display the parameter IMAGE(type: numpy.ndarray) on the left window, convert function'''
     def ShowResultImage(self, image):
-        self.selection_data.display_image = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
+        height, width,channel = image.shape
+        bytes_perLine = channel*width
+        # self.display.resize(image.shape[0], image.shape[1])
+        self.selection_data.display_image = QImage(image.data, width, height, bytes_perLine, QImage.Format_RGB888).rgbSwapped()
         self.display.setPixmap(QPixmap.fromImage(self.selection_data.display_image))
-        self.display.resize(image.shape[0], image.shape[1])
 
     #---Functions that set up the right drop down menu for background selection---#
     def SetDisplayImageSelection(self):
@@ -154,7 +171,7 @@ class SelectBoard(QMainWindow):
                 image = self.selection_data.face_set[i,j]
                 q_img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
                 button = QPushButton("")
-                button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                # button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 button.setCheckable(True)
                 button.setIcon(QIcon(QPixmap.fromImage(q_img)))
                 button.setIconSize(QSize(100,100))
@@ -228,8 +245,13 @@ class SelectBoard(QMainWindow):
 
             
 if __name__ == '__main__':
+    #TODO: Need to figure out how to load in all images in a list like below
+    img_pack = [cv2.imread("lena.tiff"), cv2.imread("2.png")]
+
     app = QApplication(sys.argv)
-    view = SelectBoard()
+    view = SelectBoard(img_pack)
+    
+    # view.setFixedSize(1024, 512)
     view.show()
     
     sys.exit(app.exec_())
