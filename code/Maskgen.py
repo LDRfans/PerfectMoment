@@ -53,10 +53,10 @@ def generate_pyramid_mask(pt1, pt2, img_shape):
 
 
     # mask2 = gaussian_filter(mask, sigma=10)
-    cv2.imshow('mask', mask)
+    # cv2.imshow('mask', mask)
     # cv2.imshow('mask2',mask2)
     # cv2.imshow('weighted',mask * 0.2+mask2)
-    cv2.waitKey()
+    # cv2.waitKey()
 
 
     return mask
