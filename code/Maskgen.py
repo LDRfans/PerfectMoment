@@ -31,22 +31,36 @@ def generate_mask(subject_info, base_size):
 
 
 def generate_pyramid_mask(pt1, pt2, img_shape):
+
+    # First generate a template
+    mask_template = np.zeros((150,150,3),dtype=float)
+    mask_template[25:125,25:125,:] = 1
+    mask_template = gaussian_filter(mask_template, sigma=7)
+    mask_template = mask_template[20:130,20:130,:]
+
+
     x, y, c = img_shape
-    mask = np.zeros((x, y, c), dtype=np.float)
+    mask = np.zeros((x, y, c), dtype=float)
 
     # Set the mask to the raw 0/1
     y1, x1 = pt1
     y2, x2 = pt2
-    bias = 22
-    mask[y1+bias:y2-bias, x1+bias:x2-bias, :] = 1
+    # bias = 22
+    # mask[y1+bias:y2-bias, x1+bias:x2-bias, :] = 1
+    # mask[y1:y2, x1:x2, :] = 1
+    mask_resized = cv2.resize(mask_template,(y2-y1,x2-x1))
+    mask[y1:y2,x1:x2,:] += mask_resized
 
-    mask2 = gaussian_filter(mask, sigma=10)
-    # cv2.imshow('mask',mask2)
-    # cv2.waitKey()
+
+    # mask2 = gaussian_filter(mask, sigma=10)
+    cv2.imshow('mask', mask)
+    # cv2.imshow('mask2',mask2)
+    # cv2.imshow('weighted',mask * 0.2+mask2)
+    cv2.waitKey()
 
 
-    return mask2
+    return mask
 
 
 if __name__ == '__main__':
-    pass
+    generate_pyramid_mask((200,200),(300,300),(500,500,3))

@@ -30,7 +30,6 @@ if __name__ == '__main__':
         # cv2.imshow('2',img_list[0])
         # cv2.imshow('3',np.array(mask_body * 255//2+img_list[0]//2,dtype=np.uint8))
         # cv2.waitKey(0)
-        # break
         head_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_head)
         # Blending
         # cv2.imshow("head", head_aligned)
