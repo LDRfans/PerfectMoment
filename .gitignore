@@ -2,3 +2,7 @@
 .pio
 .vscode
 .idea
+code/.idea/
+code/__pycache__/
+code/haarcascade_upperbody.xml
+code/shape_predictor_68_face_landmarks.dat
