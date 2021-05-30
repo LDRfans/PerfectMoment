@@ -5,25 +5,38 @@ import cv2
 import numpy as np
 from Fileop import read_img
 from Maskgen import generate_mask,generate_pyramid_mask
+import logging
+
+logging.basicConfig(level = logging.DEBUG,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
     img_list = read_img(paths)
 
-    img_info_list = [extract(img) for img in img_list]
+    img_info_list = [extract(img,[0.5,0.8,0.6,0.25]) for img in img_list]
 
     # TODO: Give the data to UI
+    log.info('Starting the Selection GUI')
 
     # Simulate the UI
     img_base_index = 0
     img_base = img_list[img_base_index]
     subject_num = img_info_list[img_base_index].shape[0]
-    selected_list = [0,1]
+    selected_list = [0, 1]
+
+    log.info('GUI Selection finished')
+    log.info('GUI Selection finished')
+    log.debug('Your selected base image is ' + str(img_base_index))
+    log.debug('Your selected perfect moment is ' + str(selected_list))
+
+
 
     # Continue
     for i in range(subject_num):
         # Skip the same one
         if(selected_list[i] == img_base_index):
+            log.debug('Skip the same image. i = ' + str(i))
             continue
 
         subject_info_list = img_info_list[selected_list[i]]
@@ -51,8 +64,8 @@ if __name__ == '__main__':
 
         mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
         print(mask.shape)
-        cv2.imshow('3', np.array(mask * 255 // 2 + img_list[0] // 2, dtype=np.uint8))
-        cv2.waitKey(0)
+        # cv2.imshow('3', np.array(mask * 255 // 2 + img_list[0] // 2, dtype=np.uint8))
+        # cv2.waitKey(0)
 
         blended_img = pyramid_blend(head_full,img_base,mask)
         # cv2.imshow('1',blended_img)
