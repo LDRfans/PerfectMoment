@@ -104,6 +104,7 @@ class DataSet:
         for picture_masks in self.initial_masks:
             faces_in_picture = []
             for mask in picture_masks:
+                # TODO:Using the data to cut the head form the picture
                 pass
 
 
