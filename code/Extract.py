@@ -49,7 +49,7 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
         h=int(h+(dialation[1]+dialation[3])*h) if y+int(h+(dialation[1]+dialation[3])*h)<height else height-y
         head_bounding_boxes.append(
             [x, y, w,h])
-    print(head_bounding_boxes)
+    #print(head_bounding_boxes)
 
     haar_upper_body_cascade = cv2.CascadeClassifier(
         "./haarcascade_upperbody.xml")
@@ -68,7 +68,7 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
             w = subject[2]*1.5 if left+w<width-1 else width
             h = height - top
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
-    print(upper_body_bounding_boxes)
+    #print(upper_body_bounding_boxes)
 
     data = [head_bounding_boxes, upper_body_bounding_boxes]
     data = np.array(data)

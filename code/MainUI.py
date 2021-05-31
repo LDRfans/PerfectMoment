@@ -4,6 +4,11 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLa
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
+from Fileop import read_img
+from Maskgen import generate_mask,generate_pyramid_mask,generate_all_mask
+from Pyramid import pyramid_blend
+from Homography import face_to_base
+from Extract import extract
 
 def ImageResize(img, ratio):
     row = img.shape[0]
@@ -12,10 +17,18 @@ def ImageResize(img, ratio):
     return ret
 
 class DataSet:
-    def __init__(self, img_pack):
+    def __init__(self, img_list):
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
+        # Detect the face by applying the mask to the image
+        self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list]
+        self.img_shape_list = [img.shape for img in img_list]
+        self.initial_masks = generate_all_mask(self.img_info_list,self.img_shape_list)
+        self.image_pack = img_list
+
+
+
+        # Give the faces to UI
         self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
-        self.image_pack = img_pack
 
         # Each row is a picture, each column is a person, a person can only have one face in all pictures, thus only on 1 in each column
         self.num_picture = len(self.image_pack)
@@ -81,6 +94,21 @@ class DataSet:
     #                 image = image[:,diff:col-diff,:]
     #             ratio = 100 / denominator
     #             self.face_set[i,j] = ImageResize(image, ratio)
+
+    def generateFaceSet(self):
+        '''
+        Generate the face sets from the masks
+        :return: Teh face sets for the GUI
+        '''
+        faces = []
+        for picture_masks in self.initial_masks:
+            faces_in_picture = []
+            for mask in picture_masks:
+                pass
+
+
+
+        return faces
 
 class SelectBoard(QMainWindow):
     def __init__(self, img_pack):
@@ -245,11 +273,12 @@ class SelectBoard(QMainWindow):
 
             
 if __name__ == '__main__':
-    #TODO: Need to figure out how to load in all images in a list like below
-    img_pack = [cv2.imread("lena.tiff"), cv2.imread("2.png")]
+    # Load the image
+    paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
+    img_list = read_img(paths)
 
     app = QApplication(sys.argv)
-    view = SelectBoard(img_pack)
+    view = SelectBoard(img_list)
     
     # view.setFixedSize(1024, 512)
     view.show()
