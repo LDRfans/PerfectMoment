@@ -142,11 +142,13 @@ class DataSet:
         return faces_cut
 
 class SelectBoard(QMainWindow):
-    def __init__(self, img_pack):
+    def __init__(self, img_pack, index_list):
         # super(SelectBoard, self).__init__()
         super().__init__()
         self.selection_data = DataSet(img_pack)
         self.selectButtonDict = {}
+
+        self.index_list = index_list
 
         self.height = 0
         self.width = 0
@@ -301,17 +303,30 @@ class SelectBoard(QMainWindow):
         # result = YOUR_FUNCTION()
         # self.selection_data.SetDisplayImageData(result)
         # self.ShowResultImage(result)
+        index_mat = self.selection_data.selected_matrix
+        for i in range(index_mat.shape[0]):
+            for j in range(index_mat.shape[1]):
+                if index_mat[i][j] == 1:
+                    self.index_list.append(j)
+        print(f"selected_list: {self.index_list}")
 
-            
+
+def SelectUI(img_list, index_list):
+    app = QApplication(sys.argv)
+    view = SelectBoard(img_list, index_list)
+    view.show()
+    app.exec_()
+
 if __name__ == '__main__':
     # Load the image
     paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
     img_list = read_img(paths)
+    SelectUI(img_list)
 
-    app = QApplication(sys.argv)
-    view = SelectBoard(img_list)
-    
-    # view.setFixedSize(1024, 512)
-    view.show()
-    
-    sys.exit(app.exec_())
+    # app = QApplication(sys.argv)
+    # view = SelectBoard(img_list)
+    #
+    # # view.setFixedSize(1024, 512)
+    # view.show()
+    #
+    # sys.exit(app.exec_())

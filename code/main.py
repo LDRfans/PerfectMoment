@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from Fileop import read_img
 from Maskgen import generate_mask,generate_pyramid_mask
+from MainUI import SelectUI
 import logging
 
 logging.basicConfig(level = logging.DEBUG,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -23,7 +24,12 @@ if __name__ == '__main__':
     img_base_index = 0
     img_base = img_list[img_base_index]
     subject_num = img_info_list[img_base_index].shape[0]
-    selected_list = [0, 1]
+    selected_list = [1, 1]
+
+    # selected_list = []
+    # selected_list = SelectUI(img_list, selected_list)
+    # print(f"selected_list: {selected_list}")
+    # exit()
 
     log.info('GUI Selection finished')
     log.info('GUI Selection finished')
@@ -71,6 +77,7 @@ if __name__ == '__main__':
         # cv2.imshow('1',blended_img)
         # cv2.waitKey()
         # break
+        img_base = blended_img
 
     cv2.imshow('1', blended_img)
     cv2.waitKey()
