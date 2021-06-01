@@ -28,7 +28,8 @@ class DataSet:
 
 
         # Give the faces to UI
-        self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
+        # self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
+        self.face_set = np.asarray(self.generateFaceSet())
 
         # Each row is a picture, each column is a person, a person can only have one face in all pictures, thus only on 1 in each column
         self.num_picture = len(self.image_pack)
@@ -43,6 +44,8 @@ class DataSet:
         self.selected_matrix = np.zeros((self.num_picture, self.num_people))
         self.display_image = None
         self.display_image_data = self.image_pack[0]
+        # cv2.imshow('d',self.display_image_data)
+        # cv2.waitKey()
 
     ''' Helper function for SetSelected(), it will be called each time checking one button to make sure
         there is only one button in a column is selected (only one face for a person)'''
@@ -101,15 +104,42 @@ class DataSet:
         :return: Teh face sets for the GUI
         '''
         faces = []
-        for picture_masks in self.initial_masks:
+        faces_cut = []
+        # for i in range(0, len(self.img_info_list)):
+        #     picture = self.img_info_list[i]
+        #     picture_mask_list = []
+        #     for person in picture:
+        #         mask = generate_mask(person, self.img_shape_list[i])
+        #         face_mask, _ = mask
+        #         picture_mask_list.append(face_mask)
+        # Get faces with black
+        for i in range(0,len(self.initial_masks)):
+            picture_masks = self.initial_masks[i]
             faces_in_picture = []
             for mask in picture_masks:
-                # TODO:Using the data to cut the head form the picture
-                pass
+                rows, cols, c = mask.shape
+                face = np.zeros(mask.shape,dtype=np.uint8)
+                for x in range(0,rows):
+                    for y in range(0,cols):
+                        if mask[x,y,0] != 0:
+                            face[x,y,:] += self.image_pack[i][x,y,:]
+                faces_in_picture.append(face)
+            faces.append(faces_in_picture)
 
+        # Cut the black part
+        for i in range(0,len(faces)):
+            picture = faces[i]
+            faces_in_picture = []
+            for j in range(0,len(picture)):
+                person = picture[j]
+                head_bounding_box = self.img_info_list[i][j][0]
+                x, y, h, w = head_bounding_box
+                person_cut = person[y:y+h,x:x+w,:]
+                person_cut = cv2.resize(person_cut,(300,300))
+                faces_in_picture.append(person_cut)
+            faces_cut.append(faces_in_picture)
 
-
-        return faces
+        return faces_cut
 
 class SelectBoard(QMainWindow):
     def __init__(self, img_pack):

@@ -71,11 +71,29 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
     #print(upper_body_bounding_boxes)
 
     data = [head_bounding_boxes, upper_body_bounding_boxes]
+    # Sort the data
+    data = sort_faces(data)
+
     data = np.array(data)
     data = np.swapaxes(data, 0, 1)
 
+
+
     # return head_bounding_boxes, upper_body_bounding_boxes
     return data
+
+def sort_faces(info:list):
+    '''
+    Sort the person info by the head position
+    :param info: the info returned, as list
+    :return: the sorted info, as list
+    '''
+    sorted_info = []
+    for picture in info:
+        sorted_picture = sorted(picture, key=lambda x:x[0])
+        sorted_info.append(sorted_picture)
+    return sorted_info
+
 
 
 if __name__ == '__main__':
