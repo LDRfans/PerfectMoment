@@ -297,10 +297,73 @@ class SelectBoard(QMainWindow):
     def Confirm(self):
         face_matrix = self.selection_data.GetSelectedFaces()
         background = self.selection_data.GetDisplayImageData()
-        # TODO: You need to call the blending function here, and output the result!!!!!!!
-        # result = YOUR_FUNCTION()
-        # self.selection_data.SetDisplayImageData(result)
-        # self.ShowResultImage(result)
+
+        img_base_index = int(self.combo.currentText())
+        selected_list = self.ConvertSelectList(face_matrix)
+        subject_num = self.selection_data.img_info_list[img_base_index].shape[0]
+        img_base = background
+
+        print('Blending...')
+
+        for i in range(subject_num):
+            # Skip the same one
+            if (selected_list[i] == img_base_index):
+                continue
+
+            subject_info_list = self.selection_data.img_info_list[selected_list[i]]
+            # Homography
+            # mask_head, mask_body = cv2.imread("../imgs/homo_test_1/mask_head2.png")//255, cv2.imread("../imgs/homo_test_1/mask_body2.png")//255
+            mask_head, mask_body = generate_mask(subject_info_list[i], img_base.shape)
+            # print(mask_head.shape)
+            # print(img_base.shape)
+            # cv2.imshow('1',mask_head)
+            # cv2.imshow('2',img_list[0])
+            # cv2.imshow('3',np.array(mask_head * 255//2+img_list[0]//2,dtype=np.uint8))
+            # cv2.waitKey(0)
+            head_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_head)
+            # Blending
+            head_aligned = head_aligned.astype(np.uint8)
+            # cv2.imshow("head", head_aligned)
+            # cv2.waitKey(0)
+
+            head_full = np.zeros((img_base.shape), dtype=np.uint8)
+            y1, x1 = pt1
+            y2, x2 = pt2
+            head_full[y1:y2, x1:x2, :] += head_aligned
+            # cv2.imshow('head_full',head_full)
+            # cv2.waitKey()
+
+            mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
+            print(mask.shape)
+            # cv2.imshow('3', np.array(mask * 255 // 2 + img_list[0] // 2, dtype=np.uint8))
+            # cv2.waitKey(0)
+
+            blended_img = pyramid_blend(head_full, img_base, mask)
+            # cv2.imshow('1',blended_img)
+            # cv2.waitKey()
+            # break
+            img_base = blended_img
+        print('Done!')
+        self.ShowResultImage(blended_img)
+
+
+
+
+
+    def ConvertSelectList(self, face_matrix):
+        '''
+        Convert the GUI face matrix to the 1-d select list
+        :param face_matrix:
+        :return:
+        '''
+        selected_list = []
+        rows, cols = face_matrix.shape
+        for j in range(0,cols):
+            for i in range(0,rows):
+                if(face_matrix[i][j] == 1):
+                    selected_list.append(j)
+        return selected_list
+
 
 
 

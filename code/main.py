@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 from Fileop import read_img
 from Maskgen import generate_mask,generate_pyramid_mask
-from MainUI import SelectUI
 import logging
 
 logging.basicConfig(level = logging.DEBUG,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
