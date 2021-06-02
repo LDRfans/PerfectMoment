@@ -358,10 +358,11 @@ class SelectBoard(QMainWindow):
         '''
         selected_list = []
         rows, cols = face_matrix.shape
-        for j in range(0,cols):
-            for i in range(0,rows):
+        for j in range(0, cols):
+            for i in range(0, rows):
+                # print(face_matrix[i][j])
                 if(face_matrix[i][j] == 1):
-                    selected_list.append(j)
+                    selected_list.append(i)
         return selected_list
 
 
@@ -370,7 +371,7 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
+    paths = ['../imgs/homo_test_2/photo1.jpg', '../imgs/homo_test_2/photo2.jpg']
     img_list = read_img(paths)
 
     app = QApplication(sys.argv)
