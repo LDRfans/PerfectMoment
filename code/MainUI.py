@@ -293,7 +293,9 @@ class SelectBoard(QMainWindow):
         print("Reset done: ")
         print(self.selection_data.selected_matrix)
     def Save(self):
-        cv2.imwrite("Result.jpg", self.selection_data.GetDisplayImageData())
+        print('Saving...')
+        cv2.imwrite("Result.jpg", self.result_img)
+        print('Done!')
     def Confirm(self):
         face_matrix = self.selection_data.GetSelectedFaces()
         background = self.selection_data.GetDisplayImageData()
@@ -344,6 +346,7 @@ class SelectBoard(QMainWindow):
             # break
             img_base = blended_img
         print('Done!')
+        self.result_img = blended_img
         self.ShowResultImage(blended_img)
 
 
