@@ -9,7 +9,7 @@ import random
 import cv2
 import numpy as np
 
-HOMOGRAPHY_SOLVER = 1
+HOMOGRAPHY_SOLVER = 0
 
 RESIZE = 256
 INLIER_DIST = 10
