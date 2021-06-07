@@ -12,7 +12,7 @@ pts_2 = []
 def UpSample(img):
     rows, cols, channels = img.shape
     up_img = np.zeros((rows * 2,cols * 2,channels),dtype=np.float)
-    up_img[0:rows*2-1:2,0:cols*2-1:2,:] = img
+    up_img[::2,::2,:] = img
     return up_img
 
 def GaussianPyramid(img,iter_num):

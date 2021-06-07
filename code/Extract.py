@@ -56,7 +56,7 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
     upper_body_bounding_boxes = haar_upper_body_cascade.detectMultiScale(
         img_gray,
         scaleFactor=1.1,
-        minNeighbors=3,
+        minNeighbors=4,
         minSize=(25, 50),
         flags=cv2.CASCADE_SCALE_IMAGE
     )
@@ -71,6 +71,7 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
     #print(upper_body_bounding_boxes)
 
     data = [head_bounding_boxes, upper_body_bounding_boxes]
+    print(len(data[0]),len(data[1]))
     # Sort the data
     data = sort_faces(data)
 

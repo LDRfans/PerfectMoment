@@ -20,7 +20,7 @@ class DataSet:
     def __init__(self, img_list):
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
         # Detect the face by applying the mask to the image
-        self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list]
+        self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list] # [0.5, 0.8, 0.6, 0.25]
         self.img_shape_list = [img.shape for img in img_list]
         self.initial_masks = generate_all_mask(self.img_info_list,self.img_shape_list)
         self.image_pack = img_list
@@ -374,7 +374,12 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/homo_test_2/photo1.jpg', '../imgs/homo_test_2/photo2.jpg']
+    # paths = ['../imgs/homo_test_2/photo1.jpg', '../imgs/homo_test_2/photo2.jpg']
+    # paths = ['../imgs/test2/conv_IMG_3553.jpg', '../imgs/test2/conv_IMG_3554.jpg']
+    # paths = ['../imgs/test3/1.jpg', '../imgs/test3/2.jpg', '../imgs/test3/3.jpg']
+    # paths = ['../imgs/test/photo1.jpg', '../imgs/test/photo2.jpg']
+    # paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
+    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
     img_list = read_img(paths)
 
     app = QApplication(sys.argv)
