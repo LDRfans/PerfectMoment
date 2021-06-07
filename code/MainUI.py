@@ -6,7 +6,8 @@ import cv2
 import numpy as np
 from Fileop import read_img
 from Maskgen import generate_mask,generate_pyramid_mask,generate_all_mask
-from Pyramid import pyramid_blend
+# from Pyramid import pyramid_blend
+from Pyramid_z import pyramid_blend
 from Homography import face_to_base
 from Extract import extract
 
@@ -20,7 +21,8 @@ class DataSet:
     def __init__(self, img_list):
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
         # Detect the face by applying the mask to the image
-        self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list] # [0.5, 0.8, 0.6, 0.25]
+        self.img_info_list = [extract(img) for img in img_list]
+        # self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list]
         self.img_shape_list = [img.shape for img in img_list]
         self.initial_masks = generate_all_mask(self.img_info_list,self.img_shape_list)
         self.image_pack = img_list
@@ -318,7 +320,7 @@ class SelectBoard(QMainWindow):
             mask_head, mask_body = generate_mask(subject_info_list[i], img_base.shape)
             # print(mask_head.shape)
             # print(img_base.shape)
-            # cv2.imshow('1',mask_head)
+            # cv2.imshow('mask_head',mask_head)
             # cv2.imshow('2',img_list[0])
             # cv2.imshow('3',np.array(mask_head * 255//2+img_list[0]//2,dtype=np.uint8))
             # cv2.waitKey(0)
@@ -328,19 +330,25 @@ class SelectBoard(QMainWindow):
             # cv2.imshow("head", head_aligned)
             # cv2.waitKey(0)
 
-            head_full = np.zeros((img_base.shape), dtype=np.uint8)
+            head_full = 255 * np.ones((img_base.shape), dtype=np.uint8)
             y1, x1 = pt1
             y2, x2 = pt2
-            head_full[y1:y2, x1:x2, :] += head_aligned
+            head_full[y1:y2, x1:x2, :] = head_aligned
             # cv2.imshow('head_full',head_full)
             # cv2.waitKey()
 
             mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
-            print(mask.shape)
+            # mask = np.array(mask, np.uint8)
+
+            # cv2.imshow("mask", mask)
+            # cv2.waitKey(0)
+
+            # print(mask.shape)
             # cv2.imshow('3', np.array(mask * 255 // 2 + img_list[0] // 2, dtype=np.uint8))
             # cv2.waitKey(0)
 
             blended_img = pyramid_blend(head_full, img_base, mask)
+            # blended_img = pyramid_blend(head_full, img_base, mask)
             # cv2.imshow('1',blended_img)
             # cv2.waitKey()
             # break
@@ -374,13 +382,11 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    # paths = ['../imgs/homo_test_2/photo1.jpg', '../imgs/homo_test_2/photo2.jpg']
-    # paths = ['../imgs/test2/conv_IMG_3553.jpg', '../imgs/test2/conv_IMG_3554.jpg']
-    # paths = ['../imgs/test3/1.jpg', '../imgs/test3/2.jpg', '../imgs/test3/3.jpg']
-    # paths = ['../imgs/test/photo1.jpg', '../imgs/test/photo2.jpg']
-    # paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
-    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
-    img_list = read_img(paths)
+    paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
+    # img_list = read_img(paths)
+    RESIZE = 512
+    img_list = [cv2.resize(cv2.imread(path), (RESIZE, RESIZE)) for path in paths]
+    # img_list = [cv2.imread(path) for path in paths]
 
     app = QApplication(sys.argv)
     view = SelectBoard(img_list)
