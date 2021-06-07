@@ -3,7 +3,7 @@ import cv2
 import dlib
 
 
-def extract(img, dialation=[0.5,0.8,0.5,0.05]):
+def extract(img, dialation=[0.5,1.0,0.5,0.2]):
     '''
     Read an image and extract key points from it
     :param img: image to extract, type is ndarray
@@ -43,12 +43,12 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
         bottom = subject.bottom()
         left = subject.left()
         right = subject.right()
+
         x=int(left-dialation[0]*w) if int(top-dialation[0]*h)>=0 else 0
         y=int(top-dialation[1]*h) if int(top-dialation[1]*h)>=0 else 0
         w=int(w+(dialation[0]+dialation[2])*w) if x+int(w+(dialation[0]+dialation[2])*w)<width else width-x
         h=int(h+(dialation[1]+dialation[3])*h) if y+int(h+(dialation[1]+dialation[3])*h)<height else height-y
-        head_bounding_boxes.append(
-            [x, y, w,h])
+        head_bounding_boxes.append([x, y, w, h])
     #print(head_bounding_boxes)
 
     haar_upper_body_cascade = cv2.CascadeClassifier(
@@ -77,6 +77,10 @@ def extract(img, dialation=[0.5,0.8,0.5,0.05]):
 
     data = np.array(data)
     data = np.swapaxes(data, 0, 1)
+
+    # debug code
+    # cv2.imshow('1',cv2.rectangle(img,(data[0][0][0],data[0][0][1]),(data[0][0][0]+data[0][0][2],data[0][0][1]+data[0][0][3]),color=2))
+    # cv2.waitKey()
 
 
 
