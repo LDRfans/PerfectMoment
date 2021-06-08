@@ -12,8 +12,9 @@ from Pyramid_z import pyramid_blend
 from Homography import face_to_base
 from Extract import extract
 
+RESIZE_RATIO = 0.1
 
-def ImageResize(img, ratio):
+def imageResize(img, ratio):
     row = img.shape[0]
     col = img.shape[1]
     ret = cv2.resize(img, (int(col * ratio), int(row * ratio)))
@@ -24,17 +25,19 @@ class DataSet:
     def __init__(self, img_list):
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
         # Detect the face by applying the mask to the image
+        print("Extract")
         self.img_info_list = [extract(img) for img in img_list]
-        # self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list]
         self.img_shape_list = [img.shape for img in img_list]
         self.initial_masks = generate_all_mask(self.img_info_list, self.img_shape_list)
         self.image_pack = img_list
 
         # Give the faces to UI
+        print("Face Set")
         # self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
         self.face_set = np.asarray(self.generateFaceSet())
 
         # Each row is a picture, each column is a person, a person can only have one face in all pictures, thus only on 1 in each column
+        print("Other")
         self.num_picture = len(self.image_pack)
         self.num_people = self.face_set.shape[1]
 
@@ -110,7 +113,7 @@ class DataSet:
     def generateFaceSet(self):
         '''
         Generate the face sets from the masks
-        :return: Teh face sets for the GUI
+        :return: The face sets for the GUI
         '''
         faces = []
         faces_cut = []
@@ -374,10 +377,12 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/test4/1.jpg', '../imgs/test4/2.jpg']
+    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg']
     # img_list = read_img(paths)
     img_list = [cv2.imread(path) for path in paths]
-    # img_list = [cv2.imread(path) for path in paths]
+    # img_list = [imageResize(img, 1080 / img.shape[0]) for img in img_list]
+
+    # img_list = [imageResize(img, RESIZE_RATIO) for img in img_list_0]
 
     app = QApplication(sys.argv)
     view = SelectBoard(img_list)
