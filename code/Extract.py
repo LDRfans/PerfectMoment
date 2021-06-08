@@ -79,10 +79,14 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
     data = np.swapaxes(data, 0, 1)
 
     # debug code
-    # cv2.imshow('1',cv2.rectangle(img,(data[0][0][0],data[0][0][1]),(data[0][0][0]+data[0][0][2],data[0][0][1]+data[0][0][3]),color=2))
-    # cv2.waitKey()
-
-
+    # show_img = img.copy()
+    # for person in data:
+    #     head, body = person
+    #     show_img = cv2.rectangle(show_img, (head[0],head[1]),(head[0]+head[2],head[1]+head[3]),color=(0, 0, 255),thickness=4)
+    #     show_img = cv2.putText(show_img,'face', (head[0],head[1]), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 255), 2)
+    #     show_img = cv2.rectangle(show_img, (body[0], body[1]), (body[0] + body[2], body[1] + body[3]), color=(0, 255, 0),thickness=4)
+    #     show_img = cv2.putText(show_img, 'body', (body[0], body[1]), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0), 2)
+    # cv2.imwrite('boxes.jpg',show_img)
 
     # return head_bounding_boxes, upper_body_bounding_boxes
     return data
