@@ -1,21 +1,24 @@
 import sys
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QComboBox, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, \
+    QVBoxLayout, QComboBox, QSizePolicy
 from PyQt5.QtGui import QIcon, QImage, QPixmap
 import cv2
 import numpy as np
 from Fileop import read_img
-from Maskgen import generate_mask,generate_pyramid_mask,generate_all_mask
+from Maskgen import generate_mask, generate_pyramid_mask, generate_all_mask
 # from Pyramid import pyramid_blend
 from Pyramid_z import pyramid_blend
 from Homography import face_to_base
 from Extract import extract
 
+
 def ImageResize(img, ratio):
     row = img.shape[0]
     col = img.shape[1]
-    ret = cv2.resize(img,(int(col*ratio),int(row*ratio)))
+    ret = cv2.resize(img, (int(col * ratio), int(row * ratio)))
     return ret
+
 
 class DataSet:
     def __init__(self, img_list):
@@ -24,10 +27,8 @@ class DataSet:
         self.img_info_list = [extract(img) for img in img_list]
         # self.img_info_list = [extract(img, [0.5, 0.8, 0.6, 0.25]) for img in img_list]
         self.img_shape_list = [img.shape for img in img_list]
-        self.initial_masks = generate_all_mask(self.img_info_list,self.img_shape_list)
+        self.initial_masks = generate_all_mask(self.img_info_list, self.img_shape_list)
         self.image_pack = img_list
-
-
 
         # Give the faces to UI
         # self.face_set = np.asarray([[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")],[cv2.imread("lena.tiff"),cv2.imread("lena.tiff"),cv2.imread("lena.tiff")]])
@@ -51,35 +52,41 @@ class DataSet:
 
     ''' Helper function for SetSelected(), it will be called each time checking one button to make sure
         there is only one button in a column is selected (only one face for a person)'''
+
     def ClearForReselection(self, coord_y):
         # for i in range(coord_x):
-            # if self.selected_matrix[i,coord_y] != 0:
-        self.selected_matrix[:,coord_y] = 0
+        # if self.selected_matrix[i,coord_y] != 0:
+        self.selected_matrix[:, coord_y] = 0
 
     ''' Helper function for class SelectBoard's CheckClicked(), it will set corresponding clicked button coordinate's
         value to 1'''
+
     def SetSelected(self, coord_x, coord_y):
         self.ClearForReselection(coord_y)
         self.selected_matrix[coord_x, coord_y] = 1
 
     ''' Function that clear all the values in the selected_matrix'''
+
     def ClearAll(self):
         for i in range(self.num_picture):
             for j in range(self.num_people):
-                self.selected_matrix[i,j] = 0
-    
+                self.selected_matrix[i, j] = 0
+
     ''' Getter function in order to get the display_image_data (type: row*col*3 np.ndarray, cv2 type),
         which is the user selected background, it can be used for later blending data,
         self.display_image_data is also the place to save the blending result'''
+
     def GetDisplayImageData(self):
         return self.display_image_data
 
     ''' Getter function in order to get the selected_matrix (type: num_picture * num_people np.ndarray, 0, 1 matrix),
         which is the user selected faces, it can be used for later blending data'''
+
     def GetSelectedFaces(self):
         return self.selected_matrix
 
     ''' Setter function to set the display_image_data, used for result displaying and saving '''
+
     def SetDisplayImageData(self, img):
         self.display_image_data = img
 
@@ -115,33 +122,34 @@ class DataSet:
         #         face_mask, _ = mask
         #         picture_mask_list.append(face_mask)
         # Get faces with black
-        for i in range(0,len(self.initial_masks)):
+        for i in range(0, len(self.initial_masks)):
             picture_masks = self.initial_masks[i]
             faces_in_picture = []
             for mask in picture_masks:
                 rows, cols, c = mask.shape
-                face = np.zeros(mask.shape,dtype=np.uint8)
-                for x in range(0,rows):
-                    for y in range(0,cols):
-                        if mask[x,y,0] != 0:
-                            face[x,y,:] += self.image_pack[i][x,y,:]
+                face = np.zeros(mask.shape, dtype=np.uint8)
+                for x in range(0, rows):
+                    for y in range(0, cols):
+                        if mask[x, y, 0] != 0:
+                            face[x, y, :] += self.image_pack[i][x, y, :]
                 faces_in_picture.append(face)
             faces.append(faces_in_picture)
 
         # Cut the black part
-        for i in range(0,len(faces)):
+        for i in range(0, len(faces)):
             picture = faces[i]
             faces_in_picture = []
-            for j in range(0,len(picture)):
+            for j in range(0, len(picture)):
                 person = picture[j]
                 head_bounding_box = self.img_info_list[i][j][0]
                 x, y, h, w = head_bounding_box
-                person_cut = person[y:y+h,x:x+w,:]
-                person_cut = cv2.resize(person_cut,(300,300))
+                person_cut = person[y:y + h, x:x + w, :]
+                person_cut = cv2.resize(person_cut, (300, 300))
                 faces_in_picture.append(person_cut)
             faces_cut.append(faces_in_picture)
 
         return faces_cut
+
 
 class SelectBoard(QMainWindow):
     def __init__(self, img_pack):
@@ -162,7 +170,7 @@ class SelectBoard(QMainWindow):
         if self.height < default_size:
             self.height = default_size
         self.width = self.width + self.selection_data.num_people * 100
-    #------Set out the structure of the UI window------#
+        # ------Set out the structure of the UI window------#
         self.setWindowTitle('Image Selection')
         self.setFixedSize(self.width, self.height)
         self.generalLayout = QHBoxLayout()
@@ -172,7 +180,7 @@ class SelectBoard(QMainWindow):
         self._centralWidget = QWidget(self)
         self.setCentralWidget(self._centralWidget)
         self._centralWidget.setLayout(self.generalLayout)
-        
+
         self.SetDisplayWindow()
         self.SetDisplayImageSelection()
         self.SetSelectionWindow(self.selection_data.num_picture, self.selection_data.num_people)
@@ -183,7 +191,7 @@ class SelectBoard(QMainWindow):
         # self.generalLayout.addStretch()
         self.subLayout.addStretch()
 
-    #---Functions that set up the left result and background display window---#
+    # ---Functions that set up the left result and background display window---#
     def SetDisplayWindow(self):
         self.display = QLabel()
         self.display.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -194,14 +202,16 @@ class SelectBoard(QMainWindow):
         self.generalLayout.addWidget(self.display)
 
     ''' Display the parameter IMAGE(type: numpy.ndarray) on the left window, convert function'''
+
     def ShowResultImage(self, image):
-        height, width,channel = image.shape
-        bytes_perLine = channel*width
+        height, width, channel = image.shape
+        bytes_perLine = channel * width
         # self.display.resize(image.shape[0], image.shape[1])
-        self.selection_data.display_image = QImage(image.data, width, height, bytes_perLine, QImage.Format_RGB888).rgbSwapped()
+        self.selection_data.display_image = QImage(image.data, width, height, bytes_perLine,
+                                                   QImage.Format_RGB888).rgbSwapped()
         self.display.setPixmap(QPixmap.fromImage(self.selection_data.display_image))
 
-    #---Functions that set up the right drop down menu for background selection---#
+    # ---Functions that set up the right drop down menu for background selection---#
     def SetDisplayImageSelection(self):
         self.combo = QComboBox(self)
         for i in range(len(self.selection_data.image_pack)):
@@ -212,6 +222,7 @@ class SelectBoard(QMainWindow):
     ''' Helper function for SetDisplayImageSelection() 
         Initially add all the input images (original images) in self.selection_data.image_pack (type: numpy.ndarray, m pictures) for background selection,
         will save the data result (type: numpy.ndarray, 1 picture) in self.selection_data.display_image_data'''
+
     def ImageSelectionUpdateDisplay(self):
         # print(type(self.combo.currentText()))
         # self.selection_data.display_image_data = self.selection_data.image_pack[int(self.combo.currentText())]
@@ -224,24 +235,24 @@ class SelectBoard(QMainWindow):
         self.combo.setCurrentText('0')
         self.ShowResultImage(self.selection_data.display_image_data)
 
-    #---Functions that set up the right selection pad for faces selections---#
+    # ---Functions that set up the right selection pad for faces selections---#
     def SetSelectionWindow(self, m, n):
         self.selectGrid = QGridLayout()
         for i in range(m):
             for j in range(n):
-                image = self.selection_data.face_set[i,j]
+                image = self.selection_data.face_set[i, j]
                 q_img = QImage(image.data, image.shape[1], image.shape[0], QImage.Format_RGB888).rgbSwapped()
                 button = QPushButton("")
                 # button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
                 button.setCheckable(True)
                 button.setIcon(QIcon(QPixmap.fromImage(q_img)))
-                button.setIconSize(QSize(100,100))
+                button.setIconSize(QSize(100, 100))
                 # button.setIconSize(QSize(button.size().width(), button.size().height()))
-                button.setAccessibleName(str((i,j)))
-                self.selectButtonDict[button] = (i,j)
+                button.setAccessibleName(str((i, j)))
+                self.selectButtonDict[button] = (i, j)
                 button.clicked.connect(self.CheckClicked)
                 self.selectGrid.addWidget(button, i, j)
-                
+
         self.subLayout.addLayout(self.selectGrid)
         # for i in self.selectButtonDict.keys():
         #     print(i.accessibleName())
@@ -249,6 +260,7 @@ class SelectBoard(QMainWindow):
     ''' Callback function for button.clicked.connect() (internal function),
         it will give out the clicked button's coordinates and pass it to self.selection_data.selected_matrix for record,
         for functions in self.selection_data, see class DataSet for details'''
+
     def CheckClicked(self):
         # print("Clicked button " + str(self.selectButtonDict[self.sender()]))
         print("Clicked button " + self.sender().accessibleName())
@@ -258,6 +270,7 @@ class SelectBoard(QMainWindow):
         print(self.selection_data.selected_matrix)
 
     ''' Visual function that mark selected button red and pop up inappropriate buttons automatically'''
+
     def MarkClickedEachRow(self, coord_x, coord_y):
         for btn in self.selectButtonDict.keys():
             if btn.isChecked():
@@ -268,12 +281,13 @@ class SelectBoard(QMainWindow):
                 btn.setStyleSheet("background-color : none")
 
     ''' Visual function that clear out all selected buttons'''
+
     def ClearAllClickedMarks(self):
         for btn in self.selectButtonDict.keys():
             btn.setChecked(False)
             btn.setStyleSheet("background-color : none")
 
-    #---Functions that set up the right options buttons group---#
+    # ---Functions that set up the right options buttons group---#
     def SetOptionButtons(self):
         self.btn_ok = QPushButton("OK")
         self.btn_reset = QPushButton("Reset")
@@ -288,16 +302,19 @@ class SelectBoard(QMainWindow):
 
     ''' Callback function for self.btn_reset, it will reset self.selected_data.selected_matrix to all 0,
         make it right for visual effects'''
+
     def Reset(self):
         self.selection_data.ClearAll()
         self.ClearAllClickedMarks()
         self.ClearSelectedBackground()
         print("Reset done: ")
         print(self.selection_data.selected_matrix)
+
     def Save(self):
         print('Saving...')
         cv2.imwrite("Result.jpg", self.result_img)
         print('Done!')
+
     def Confirm(self):
         face_matrix = self.selection_data.GetSelectedFaces()
         background = self.selection_data.GetDisplayImageData()
@@ -311,55 +328,33 @@ class SelectBoard(QMainWindow):
 
         for i in range(subject_num):
             # Skip the same one
-            if (selected_list[i] == img_base_index):
+            if selected_list[i] == img_base_index:
                 continue
 
             subject_info_list = self.selection_data.img_info_list[selected_list[i]]
+
             # Homography
             # mask_head, mask_body = cv2.imread("../imgs/homo_test_1/mask_head2.png")//255, cv2.imread("../imgs/homo_test_1/mask_body2.png")//255
             mask_head, mask_body = generate_mask(subject_info_list[i], img_base.shape)
-            # print(mask_head.shape)
-            # print(img_base.shape)
-            # cv2.imshow('mask_head',mask_head)
-            # cv2.imshow('2',img_list[0])
-            # cv2.imshow('3',np.array(mask_head * 255//2+img_list[0]//2,dtype=np.uint8))
-            # cv2.waitKey(0)
+
             head_aligned, pt1, pt2 = face_to_base(img_base, img_list[selected_list[i]], mask_body, mask_head)
             # Blending
             head_aligned = head_aligned.astype(np.uint8)
-            # cv2.imshow("head", head_aligned)
-            # cv2.waitKey(0)
 
             head_full = 255 * np.ones((img_base.shape), dtype=np.uint8)
             y1, x1 = pt1
             y2, x2 = pt2
             head_full[y1:y2, x1:x2, :] = head_aligned
-            # cv2.imshow('head_full',head_full)
-            # cv2.waitKey()
 
             mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
             # mask = np.array(mask, np.uint8)
 
-            # cv2.imshow("mask", mask)
-            # cv2.waitKey(0)
-
-            # print(mask.shape)
-            # cv2.imshow('3', np.array(mask * 255 // 2 + img_list[0] // 2, dtype=np.uint8))
-            # cv2.waitKey(0)
-
             blended_img = pyramid_blend(head_full, img_base, mask)
-            # blended_img = pyramid_blend(head_full, img_base, mask)
-            # cv2.imshow('1',blended_img)
-            # cv2.waitKey()
-            # break
+
             img_base = blended_img
         print('Done!')
         self.result_img = blended_img
         self.ShowResultImage(blended_img)
-
-
-
-
 
     def ConvertSelectList(self, face_matrix):
         '''
@@ -372,12 +367,9 @@ class SelectBoard(QMainWindow):
         for j in range(0, cols):
             for i in range(0, rows):
                 # print(face_matrix[i][j])
-                if(face_matrix[i][j] == 1):
+                if (face_matrix[i][j] == 1):
                     selected_list.append(i)
         return selected_list
-
-
-
 
 
 if __name__ == '__main__':
