@@ -13,6 +13,7 @@ from Homography import face_to_base
 from Extract import extract
 
 RESIZE_RATIO = 0.1
+BLEND_BIAS = 0
 
 
 def imageResize(img, ratio):
@@ -155,8 +156,8 @@ class DataSet:
             faces_in_picture = []
             for person in picture_info:
                 x, y, w, h = person[0]
-                face = self.image_pack[i][y:y+h, x:x+w, :]
-                face = cv2.resize(face,(300,300))
+                face = self.image_pack[i][y:y + h, x:x + w, :]
+                face = cv2.resize(face, (300, 300))
                 faces_in_picture.append(face)
             faces.append(faces_in_picture)
 
@@ -217,16 +218,14 @@ class SelectBoard(QMainWindow):
 
     def ShowResultImage(self, image):
 
-
         # Resize the image for better display
         image_small = image.copy()
         shape = image_small.shape
-        image_small = cv2.resize(image_small,(shape[1]//2,shape[0]//2))
+        image_small = cv2.resize(image_small, (shape[1] // 2, shape[0] // 2))
         # image_small = image
 
         height, width, channel = image_small.shape
         bytes_perLine = channel * width
-
 
         # self.display.resize(image.shape[0], image.shape[1])
         self.selection_data.display_image = QImage(image_small.data, width, height, bytes_perLine,
@@ -371,12 +370,23 @@ class SelectBoard(QMainWindow):
             mask = generate_pyramid_mask(pt1, pt2, img_base.shape)
             # mask = np.array(mask, np.uint8)
 
-            blended_img = pyramid_blend(head_full, img_base, mask)
+            # Resize for better performance
+            y_ref, x_ref, _ = img_base.shape
+            y11 = y1 - BLEND_BIAS if y1 - BLEND_BIAS >= 0 else 0
+            y21 = y2 + BLEND_BIAS if y2 + BLEND_BIAS < y_ref else y_ref
+            x11 = x1 - BLEND_BIAS if x1 - BLEND_BIAS >= 0 else 0
+            x21 = x2 + BLEND_BIAS if x2 + BLEND_BIAS < x_ref else x_ref
+            head_full_cut = head_full[y11:y21, x11:x21, :]
+            img_base_cut = img_base[y11:y21, x11:x21, :]
+            mask_cut = mask[y11:y21, x11:x21, :]
+            blended_img = pyramid_blend(head_full_cut, img_base_cut, mask_cut)
+            img_base[y11:y21, x11:x21, :] = blended_img
+            #print(img_base.shape)
 
-            img_base = blended_img
+            #img_base = blended_img
         print('Done!')
-        self.result_img = blended_img
-        self.ShowResultImage(blended_img)
+        self.result_img = img_base
+        self.ShowResultImage(img_base)
 
     def ConvertSelectList(self, face_matrix):
         '''
