@@ -13,8 +13,8 @@ HOMOGRAPHY_SOLVER = 0
 
 RESIZE = 256
 INLIER_DIST = 10
-MATCH_DISTANCE_RATIO = 0.75
-INLIER_RATIO = 0.8
+MATCH_DISTANCE_RATIO = 0.3      # good points
+INLIER_RATIO = 0.8              #
 RANSAC = 100
 
 IMG1_PATH = "../imgs/homo_test_1/photo1.jpg"
