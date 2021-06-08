@@ -382,10 +382,9 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/homo_test_1/photo1.jpg', '../imgs/homo_test_1/photo2.jpg']
+    paths = ['../imgs/test4/1.jpg', '../imgs/test4/2.jpg']
     # img_list = read_img(paths)
-    RESIZE = 512
-    img_list = [cv2.resize(cv2.imread(path), (RESIZE, RESIZE)) for path in paths]
+    img_list = [cv2.imread(path) for path in paths]
     # img_list = [cv2.imread(path) for path in paths]
 
     app = QApplication(sys.argv)

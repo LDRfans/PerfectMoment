@@ -80,7 +80,7 @@ def pyramid_blending(img_1, img_2, mask, levels=8):
 def pyramid_blend(img_2, img_1, mask):
     # Resize to fit the kernel
     H, W = img_2.shape[0], img_2.shape[1]
-    h, w = 512, 512
+    h, w = 1024, 1024
     img_1 = cv2.resize(img_1, (h, w))
     img_2 = cv2.resize(img_2, (h, w))
     mask = cv2.resize(mask, (h, w))
@@ -96,7 +96,7 @@ def pyramid_blend(img_2, img_1, mask):
 
     img_blended = cv2.merge([blend1, blend2, blend3])
 
-    img_blended = cv2.resize(img_blended, (H, W))
+    img_blended = cv2.resize(img_blended, (W, H))
 
     return img_blended
 
