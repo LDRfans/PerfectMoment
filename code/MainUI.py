@@ -157,7 +157,7 @@ class DataSet:
             for person in picture_info:
                 x, y, w, h = person[0]
                 face = self.image_pack[i][y:y + h, x:x + w, :]
-                face = cv2.resize(face, (300, 300))
+                face = cv2.resize(face, (100, 100))
                 faces_in_picture.append(face)
             faces.append(faces_in_picture)
 
@@ -178,7 +178,7 @@ class SelectBoard(QMainWindow):
             if row > self.height:
                 self.height = row // 2
             if col > self.width:
-                self.width = col // 2
+                self.width = col // 2 + 50
         default_size = self.selection_data.num_picture * 100 + 50
         if self.height < default_size:
             self.height = default_size
