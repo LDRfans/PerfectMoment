@@ -14,6 +14,7 @@ from Extract import extract
 
 RESIZE_RATIO = 0.1
 
+
 def imageResize(img, ratio):
     row = img.shape[0]
     col = img.shape[1]
@@ -28,7 +29,7 @@ class DataSet:
         print("Extract")
         self.img_info_list = [extract(img) for img in img_list]
         self.img_shape_list = [img.shape for img in img_list]
-        self.initial_masks = generate_all_mask(self.img_info_list, self.img_shape_list)
+        # self.initial_masks = generate_all_mask(self.img_info_list, self.img_shape_list)
         self.image_pack = img_list
 
         # Give the faces to UI
@@ -116,42 +117,50 @@ class DataSet:
         :return: The face sets for the GUI
         '''
         faces = []
-        faces_cut = []
-        # for i in range(0, len(self.img_info_list)):
-        #     picture = self.img_info_list[i]
-        #     picture_mask_list = []
-        #     for person in picture:
-        #         mask = generate_mask(person, self.img_shape_list[i])
-        #         face_mask, _ = mask
-        #         picture_mask_list.append(face_mask)
+
         # Get faces with black
-        for i in range(0, len(self.initial_masks)):
-            picture_masks = self.initial_masks[i]
+        # for i in range(0, len(self.initial_masks)):
+        #     picture_masks = self.initial_masks[i]
+        #     faces_in_picture = []
+        #     for mask in picture_masks:
+        #         mask_int = mask.copy()
+        #         mask_int = mask_int.astype(np.uint8)
+        #         rows, cols, c = mask.shape
+        #         face = np.zeros(mask.shape, dtype=np.uint8)
+        #         face = cv2.add(face,self.image_pack[i],mask=mask_int)
+        #         for x in range(0, rows):
+        #             for y in range(0, cols):
+        #                 if mask[x, y, 0] != 0:
+        #                     face[x, y, :] += self.image_pack[i][x, y, :]
+        #         faces_in_picture.append(face)
+        #     faces.append(faces_in_picture)
+        #
+        # # Cut the black part
+        # for i in range(0, len(faces)):
+        #     picture = faces[i]
+        #     faces_in_picture = []
+        #     for j in range(0, len(picture)):
+        #         person = picture[j]
+        #         head_bounding_box = self.img_info_list[i][j][0]
+        #         x, y, h, w = head_bounding_box
+        #         person_cut = person[y:y + h, x:x + w, :]
+        #         person_cut = cv2.resize(person_cut, (300, 300))
+        #         faces_in_picture.append(person_cut)
+        #     faces_cut.append(faces_in_picture)
+
+        #
+
+        for i in range(0, len(self.img_info_list)):
+            picture_info = self.img_info_list[i]
             faces_in_picture = []
-            for mask in picture_masks:
-                rows, cols, c = mask.shape
-                face = np.zeros(mask.shape, dtype=np.uint8)
-                for x in range(0, rows):
-                    for y in range(0, cols):
-                        if mask[x, y, 0] != 0:
-                            face[x, y, :] += self.image_pack[i][x, y, :]
+            for person in picture_info:
+                x, y, w, h = person[0]
+                face = self.image_pack[i][y:y+h, x:x+w, :]
+                face = cv2.resize(face,(300,300))
                 faces_in_picture.append(face)
             faces.append(faces_in_picture)
 
-        # Cut the black part
-        for i in range(0, len(faces)):
-            picture = faces[i]
-            faces_in_picture = []
-            for j in range(0, len(picture)):
-                person = picture[j]
-                head_bounding_box = self.img_info_list[i][j][0]
-                x, y, h, w = head_bounding_box
-                person_cut = person[y:y + h, x:x + w, :]
-                person_cut = cv2.resize(person_cut, (300, 300))
-                faces_in_picture.append(person_cut)
-            faces_cut.append(faces_in_picture)
-
-        return faces_cut
+        return faces
 
 
 class SelectBoard(QMainWindow):
@@ -377,7 +386,7 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg']
+    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
     # img_list = read_img(paths)
     img_list = [cv2.imread(path) for path in paths]
     # img_list = [imageResize(img, 1080 / img.shape[0]) for img in img_list]
