@@ -66,7 +66,8 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
             left = subject[0]-0.25*subject[2]
             top = subject[1]+subject[3]
             w = subject[2]*1.5 if left+w<width-1 else width
-            h = height - top
+            # h = height - top
+            h = 2 * w if 2 * w < height - top else height - top;
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
     #print(upper_body_bounding_boxes)
 
