@@ -175,9 +175,9 @@ class SelectBoard(QMainWindow):
         for img in img_pack:
             row, col, _ = img.shape
             if row > self.height:
-                self.height = row
+                self.height = row // 2
             if col > self.width:
-                self.width = col
+                self.width = col // 2
         default_size = self.selection_data.num_picture * 100 + 50
         if self.height < default_size:
             self.height = default_size
@@ -216,10 +216,20 @@ class SelectBoard(QMainWindow):
     ''' Display the parameter IMAGE(type: numpy.ndarray) on the left window, convert function'''
 
     def ShowResultImage(self, image):
-        height, width, channel = image.shape
+
+
+        # Resize the image for better display
+        image_small = image.copy()
+        shape = image_small.shape
+        image_small = cv2.resize(image_small,(shape[1]//2,shape[0]//2))
+        # image_small = image
+
+        height, width, channel = image_small.shape
         bytes_perLine = channel * width
+
+
         # self.display.resize(image.shape[0], image.shape[1])
-        self.selection_data.display_image = QImage(image.data, width, height, bytes_perLine,
+        self.selection_data.display_image = QImage(image_small.data, width, height, bytes_perLine,
                                                    QImage.Format_RGB888).rgbSwapped()
         self.display.setPixmap(QPixmap.fromImage(self.selection_data.display_image))
 
@@ -386,7 +396,7 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/test5/1.jpg', '../imgs/test5/2.jpg', '../imgs/test5/3.jpg', '../imgs/test5/4.jpg']
+    paths = ['../imgs/test4/1.jpg', '../imgs/test4/2.jpg', '../imgs/test4/4.jpg']
     # img_list = read_img(paths)
     img_list = [cv2.imread(path) for path in paths]
     # img_list = [imageResize(img, 1080 / img.shape[0]) for img in img_list]
