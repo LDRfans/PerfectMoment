@@ -41,7 +41,7 @@ def generate_pyramid_mask(pt1, pt2, img_shape):
     mask_template = np.zeros((150, 150, 3), dtype=float)
     mask_template[25:125, 25:125, :] = 1
     mask_template = gaussian_filter(mask_template, sigma=7)
-    mask_template = mask_template[18:132, 18:132, :]
+    mask_template = mask_template[15:135, 15:135, :]
 
     x, y, c = img_shape
     mask = np.zeros((x, y, c), dtype=float)
