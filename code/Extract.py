@@ -1,9 +1,11 @@
 import numpy as np
 import cv2
 import dlib
+import face_recognition as fr
 
 
-def extract(img, dialation=[0.5,1.0,0.5,0.2]):
+# def extract(img, img_ref, dialation=[1.0,1.0,1.0,0.2]):
+def extract(img, img_ref, dialation=[0.5,1.0,0.5,0.2]):
     '''
     Read an image and extract key points from it
     :param img: image to extract, type is ndarray
@@ -12,7 +14,7 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
 
     '''
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
+    predictor = dlib.shape_predictor('../material/shape_predictor_68_face_landmarks.dat')
 
     # img = cv2.imread(img)
     pts = []  # the key points
@@ -51,8 +53,7 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
         head_bounding_boxes.append([x, y, w, h])
     #print(head_bounding_boxes)
 
-    haar_upper_body_cascade = cv2.CascadeClassifier(
-        "./haarcascade_upperbody.xml")
+    haar_upper_body_cascade = cv2.CascadeClassifier("../material/haarcascade_upperbody.xml")
     upper_body_bounding_boxes = haar_upper_body_cascade.detectMultiScale(
         img_gray,
         scaleFactor=1.1,
@@ -67,7 +68,7 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
             top = subject[1]+subject[3]
             w = subject[2]*1.5 if left+w<width-1 else width
             # h = height - top
-            h = 2 * w if 2 * w < height - top else height - top;
+            h = 3 * w if 3 * w < height - top else height - top
             upper_body_bounding_boxes.append([int(left),int(top),int(w),int(h)])
     #print(upper_body_bounding_boxes)
 
@@ -78,6 +79,16 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
 
     data = np.array(data)
     data = np.swapaxes(data, 0, 1)
+
+    # Generate faces_ref
+    faces_ref = []
+    for i in range(data.shape[0]):
+        subject = data[i]
+        x, y, w, h = subject[0]
+        faces_ref.append(img_ref[y:y + h, x:x + w, :])
+        # cv2.imshow("faces_ref", faces_ref[i])
+        # cv2.waitKey(0)
+    # data = align_face(faces_ref, img, data)
 
     # debug code
     # show_img = img.copy()
@@ -91,6 +102,32 @@ def extract(img, dialation=[0.5,1.0,0.5,0.2]):
 
     # return head_bounding_boxes, upper_body_bounding_boxes
     return data
+
+
+def align_face(faces_ref, img_src, data):
+    data_new = []
+    faces_src = []
+    for subject in data:
+        x, y, w, h = subject[0]
+        faces_src.append(img_src[y:y + h, x:x + w, :])
+    # cv2.imshow("faces_src", faces_src[0])
+    # cv2.waitKey(0)
+    for j in range(len(faces_ref)):
+        face_ref = faces_ref[j]
+        dist_min = 9999999
+        index_min = 0
+        vec_ref = np.array(fr.face_encodings(face_ref))
+        for i in range(len(faces_src)):
+            face_src = faces_src[i]
+            vec_src = np.array(fr.face_encodings(face_src))
+            dist = np.linalg.norm(vec_ref - vec_src)
+            if dist < dist_min:
+                index_min = i
+                dist_min = dist
+        data_new.append(data[index_min])
+    data_new = np.array(data_new)
+    return data_new
+
 
 def sort_faces(info:list):
     '''

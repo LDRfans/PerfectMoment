@@ -13,9 +13,9 @@ HOMOGRAPHY_SOLVER = 0
 
 RESIZE = 256
 INLIER_DIST = 10
-MATCH_DISTANCE_RATIO = 0.3      # good points
-INLIER_RATIO = 0.8              #
-RANSAC = 100
+MATCH_DISTANCE_RATIO = 0.6      # good points
+INLIER_RATIO = 0.7
+RANSAC = 1000
 
 IMG1_PATH = "../imgs/homo_test_1/photo1.jpg"
 IMG2_PATH = "../imgs/homo_test_1/photo2.jpg"
@@ -46,11 +46,11 @@ def homographySolver(img2_keys, img1_keys, K):
     return H
 
 
-def findHomography(img1_keys, img2_keys):
+def findHomography(img1_keys, img2_keys, GOOD_POINTS=4):
     # RANSAC
     for round in range(RANSAC):
         print("RANSAC:", round)
-        H = homographySolver(img1_keys, img2_keys, K=4).reshape(3, 3)  # img_1 <- img_2
+        H = homographySolver(img1_keys, img2_keys, K=GOOD_POINTS).reshape(3, 3)  # img_1 <- img_2
 
         # Find inliers
         homo_img1_keys = np.array([np.append(np.array(img1_keys[i]), 1) for i in range(len(img1_keys))])
@@ -133,6 +133,20 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
     # Define matecher
     raw_matches = matcher(descriptors_1, descriptors_2)
 
+    # DRAW
+    # matcher = cv2.BFMatcher()
+    # raw_matches = matcher.knnMatch(descriptors_1, descriptors_2, k=2)
+    # good_points = []
+    # good_matches = []
+    # for m1, m2 in raw_matches:
+    #     if m1.distance < MATCH_DISTANCE_RATIO * m2.distance:
+    #         good_points.append((m1.trainIdx, m1.queryIdx))
+    #         good_matches.append([m1])
+    # img3 = cv2.drawMatchesKnn(img1, keypoints_1, img2, keypoints_2, good_matches, None, flags=2)
+    #
+    # cv2.imwrite("sift_align.jpg", img3)
+    # exit()
+
     # Select good matches
     good_points = []
     for id_1, match_1, match_2 in raw_matches:
@@ -142,11 +156,13 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
             good_points.append((id_1, match_1))
 
     # Calculate homograph H with RANSAC
-    if len(good_points) >= 4:
+    GOOD_POINTS = 10
+    if len(good_points) >= GOOD_POINTS:
+        GOOD_POINTS = len(good_points)
         img1_keys = np.float32([keypoints_1[i].pt for (i, _) in good_points])
         img2_keys = np.float32([keypoints_2[i].pt for (_, i) in good_points])
         if HOMOGRAPHY_SOLVER:
-            H = findHomography(img1_keys, img2_keys)  # img_1 <- img_2
+            H = findHomography(img1_keys, img2_keys, GOOD_POINTS)  # img_1 <- img_2
         else:
             H, status = cv2.findHomography(img2_keys, img1_keys, cv2.RANSAC, 5.0)
     else:
@@ -171,7 +187,7 @@ def face_to_base(img_base, img_target, mask_body, mask_face):
                 if x2 < col:  x2 = col
                 if y2 < row:  y2 = row
 
-    padding = 10
+    padding = 15
     x1, y1, x2, y2 = x1 + padding, y1 + padding, x2 - padding, y2 - padding
     face_aligned = panorama2[y1:y2, x1:x2, :]
     panorama[y1:y2, x1:x2, :] = face_aligned

@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QPushButton, QHBoxLayout, \
@@ -28,7 +29,7 @@ class DataSet:
         # TODO: Get the image list of the face detection, NEED FACE DETECTION function to replace the line below
         # Detect the face by applying the mask to the image
         print("Extract")
-        self.img_info_list = [extract(img) for img in img_list]
+        self.img_info_list = [extract(img, img_list[0]) for img in img_list]    # select img_0 as img_ref
         self.img_shape_list = [img.shape for img in img_list]
         # self.initial_masks = generate_all_mask(self.img_info_list, self.img_shape_list)
         self.image_pack = img_list
@@ -333,7 +334,7 @@ class SelectBoard(QMainWindow):
 
     def Save(self):
         print('Saving...')
-        cv2.imwrite("Result.jpg", self.result_img)
+        cv2.imwrite("../result/Result.jpg", self.result_img)
         print('Done!')
 
     def Confirm(self):
@@ -406,9 +407,17 @@ class SelectBoard(QMainWindow):
 
 if __name__ == '__main__':
     # Load the image
-    paths = ['../imgs/test4/1.jpg', '../imgs/test4/2.jpg', '../imgs/test4/4.jpg']
+    dir_path = "../material/test5"
+    paths = sorted(os.listdir(dir_path))
+    img_list = []
+    for path in paths:
+        if path.split('.')[-1] in ["jpg", "JPG"]:
+            img_list.append(cv2.imread(os.path.join(dir_path, path)))
+
+    # paths = ['../imgs/test6/1.jpg', '../imgs/test6/2.jpg']
+    # paths = ['../imgs/homo_test_5/1.jpg', '../imgs/homo_test_5/2.jpg']
     # img_list = read_img(paths)
-    img_list = [cv2.imread(path) for path in paths]
+    # img_list = [cv2.imread(path) for path in paths]
     # img_list = [imageResize(img, 1080 / img.shape[0]) for img in img_list]
 
     # img_list = [imageResize(img, RESIZE_RATIO) for img in img_list_0]
